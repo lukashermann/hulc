@@ -1,0 +1,4 @@
+_target_: hulc.models.decoders.lang_discriminator.LangDiscriminator
+in_features: ${model.clip_proj.output_dim}
+lang_dim: ${model.clip_proj.output_dim}
+dropout_p: 0.0

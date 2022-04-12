@@ -1,0 +1,3 @@
+_target_: hulc.models.decoders.lang_decoder.LangDecoder
+in_features: ${model.plan_recognition.fc_hidden_size}
+lang_dim: ${model.language_goal.in_features}

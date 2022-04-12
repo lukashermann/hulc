@@ -1,0 +1,4 @@
+_target_: hulc.utils.distributions.Distribution
+dist: "discrete"
+category_size: 32
+class_size: 32

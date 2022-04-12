@@ -1,0 +1,6 @@
+_target_: hulc.models.plan_encoders.plan_proposal_net.PlanProposalNetwork
+perceptual_features: ???
+latent_goal_features: ${model.visual_goal.latent_goal_features}
+plan_features: ???
+activation_function: ReLU #ELU
+hidden_size: 2048

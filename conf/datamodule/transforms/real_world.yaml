@@ -1,0 +1,65 @@
+train:
+  rgb_static:
+    - _target_: torchvision.transforms.Resize
+      size: 200
+    - _target_: hulc.utils.transforms.RandomShiftsAug
+      pad: 10
+    - _target_: hulc.utils.transforms.ScaleImageTensor
+    - _target_: torchvision.transforms.Normalize
+      mean: [0.5,]
+      std: [0.5,]
+  rgb_gripper:
+    - _target_: torchvision.transforms.Resize
+      size: 84
+    - _target_: hulc.utils.transforms.RandomShiftsAug
+      pad: 4
+    - _target_: hulc.utils.transforms.ScaleImageTensor
+    - _target_: torchvision.transforms.Normalize
+      mean: [0.5,]
+      std: [0.5,]
+  depth_static:
+    - _target_: torchvision.transforms.Resize
+      size: 200
+    - _target_: hulc.utils.transforms.AddDepthNoise
+      shape: [1000.0]
+      rate: [1000.0]
+  depth_gripper:
+    - _target_: torchvision.transforms.Resize
+      size: 84
+    - _target_: hulc.utils.transforms.AddGaussianNoise
+      mean: [ 0.0 ]
+      std: [ 0.01 ]
+
+  robot_obs:
+    - _target_: hulc.utils.transforms.NormalizeVector
+
+#  language:
+#    - _target_: hulc.utils.transforms.AddGaussianNoise
+#      mean: [ 0.0 ]
+#      std: [ 0.01 ]
+
+
+val:
+  rgb_static:
+    - _target_: torchvision.transforms.Resize
+      size: 200
+    - _target_: hulc.utils.transforms.ScaleImageTensor
+    - _target_: torchvision.transforms.Normalize
+      mean: [0.5,]
+      std: [0.5,]
+  rgb_gripper:
+    - _target_: torchvision.transforms.Resize
+      size: 84
+    - _target_: hulc.utils.transforms.ScaleImageTensor
+    - _target_: torchvision.transforms.Normalize
+      mean: [0.5,]
+      std: [0.5,]
+  depth_static:
+    - _target_: torchvision.transforms.Resize
+      size: 200
+  depth_gripper:
+    - _target_: torchvision.transforms.Resize
+      size: 84
+
+  robot_obs:
+    - _target_: hulc.utils.transforms.NormalizeVector

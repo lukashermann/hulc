@@ -1,0 +1,7 @@
+defaults:
+  - rollout: default
+  - rollout_lh: default
+  - checkpoint: val_action
+  - tsne_plot: default
+  - kl_schedule: constant
+  - shm_signal: default

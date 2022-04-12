@@ -1,0 +1,12 @@
+_target_: hulc.models.decoders.deterministic_decoder.DeterministicDecoder
+hidden_size: 2048
+out_features: ${datamodule.action_space}
+policy_rnn_dropout_p: 0.0
+perceptual_features: ??
+latent_goal_features: ${model.visual_goal.latent_goal_features}
+plan_features: ???
+criterion: HuberLoss  # MSELoss
+num_layers: 2
+rnn_model: rnn_decoder
+perceptual_emb_slice: [64, 128]
+gripper_control: true

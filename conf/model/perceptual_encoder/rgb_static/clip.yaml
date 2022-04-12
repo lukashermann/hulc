@@ -1,0 +1,4 @@
+_target_: hulc.models.perceptual_encoders.vision_clip.VisionClip
+visual_features: 64
+freeze_backbone: true
+model_name: "RN50" # "RN101", "RN50x4", "RN50x16", "ViT-B/32", "ViT-B/16"

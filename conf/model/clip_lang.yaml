@@ -1,0 +1,3 @@
+_target_: hulc.models.encoders.clip_lang_encoder.LangClip
+freeze_backbone: true
+model_name: "RN50" # "RN101", "RN50x4", "RN50x16", "ViT-B/32", "ViT-B/16"

@@ -1,0 +1,3 @@
+_target_: hulc.models.decoders.state_decoder.StateDecoder
+visual_features: 64
+n_state_obs: 8
