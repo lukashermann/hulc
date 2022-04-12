@@ -1,3 +1,0 @@
-defaults:
-  - vision_dataset: vision_shm_skip
-  - lang_dataset: lang_shm_skip

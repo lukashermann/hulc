@@ -1,3 +1,0 @@
-_target_: hulc.models.perceptual_encoders.vision_resnet.VisionResnet
-visual_features: 64
-freeze_backbone: True
