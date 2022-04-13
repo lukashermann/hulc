@@ -91,7 +91,21 @@ Optional arguments:
 You can instead specify the path to another checkpoint by adding this to the evaluation command.
 - `--debug`: print debug information and visualize environment.
 
+## Acknowledgements
 
+This work uses code from the following open-source projects and datasets:
+
+#### CALVIN
+Original:  [https://github.com/mees/calvin](https://github.com/mees/calvin)  
+License: [MIT](https://github.com/mees/calvin/blob/main/LICENSE)    
+
+#### Sentence-Transformers
+Original:  [https://github.com/UKPLab/sentence-transformers](https://github.com/UKPLab/sentence-transformers)  
+License: [Apache 2.0](https://github.com/UKPLab/sentence-transformers/blob/master/LICENSE)  
+
+#### OpenAI CLIP
+Original: [https://github.com/openai/CLIP](https://github.com/openai/CLIP)  
+License: [MIT](https://github.com/openai/CLIP/blob/main/LICENSE)  
 ## Citations
 
 If you find the code useful, please cite:
@@ -114,3 +128,7 @@ journal={arXiv preprint arXiv:2112.03227},
 year = 2021,
 }
 ```
+
+## License
+
+MIT License
