@@ -97,8 +97,7 @@ You can instead specify the path to another checkpoint by adding this to the eva
 If you find the code useful, please cite:
 
 **HULC**
-```
-bibtex
+```bibtex
 @article{hulc22,
 author = {Oier Mees and Lukas Hermann and Wolfram Burgard},
 title = {What Matters in Language Conditioned Imitation Learning},
@@ -107,8 +106,7 @@ year = 2022,
 }
 ```
 **CALVIN**
-```
-bibtex
+```bibtex
 @article{calvin21,
 author = {Oier Mees and Lukas Hermann and Erick Rosete-Beas and Wolfram Burgard},
 title = {CALVIN: A benchmark for Language-Conditioned Policy Learning for Long-Horizon Robot Manipulation Tasks},
