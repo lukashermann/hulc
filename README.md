@@ -33,22 +33,22 @@ If you encounter problems installing pyhash, you might have to downgrade setupto
 ### CALVIN Dataset
 If you want to train on the [CALVIN](https://github.com/mees/calvin) dataset, choose a split with:
 ```bash
-$ cd $HULC_ROOT/dataset
-$ sh download_data.sh D | ABC | ABCD
+cd $HULC_ROOT/dataset
+sh download_data.sh D | ABC | ABCD
 ```
 ### Language Embeddings
 We provide the precomputed embeddings of the different Language Models we evaluate in the paper.
 The script assumes the corresponding split has been already downloaded.
 ```bash
-$ cd $HULC_ROOT/dataset
-$ sh download_lang_embeddings.sh D | ABC | ABCD
+cd $HULC_ROOT/dataset
+sh download_lang_embeddings.sh D | ABC | ABCD
 ```
 
 ### Pre-trained Models
 We provide our final models for all three CALVIN splits.
 ```bash
-$ cd $HULC_ROOT/checkpoints
-$ sh download_model_weights.sh D | ABC | ABCD
+cd $HULC_ROOT/checkpoints
+sh download_model_weights.sh D | ABC | ABCD
 ```
 
 ## Hardware Requirements 
