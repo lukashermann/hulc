@@ -12,6 +12,7 @@
 This code accompanies the paper What Matters in Language Conditioned Imitation Learning, which can be found here. 
 We hope the code will be useful as a starting point for further research on language conditioned policy learning and will bring us closer towards general-purpose robots that can relate human language to their perception and actions. 
 
+![](media/hulc_rollout.gif)
 ## Installation
 To begin, clone this repository locally
 ```bash
