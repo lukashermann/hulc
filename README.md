@@ -12,7 +12,7 @@
 This code accompanies the paper What Matters in Language Conditioned Imitation Learning, which can be found here. 
 We hope the code will be useful as a starting point for further research on language conditioned policy learning and will bring us closer towards general-purpose robots that can relate human language to their perception and actions. 
 
-# Installation
+## Installation
 To begin, clone this repository locally
 ```bash
 git clone --recurse-submodules https://github.com/mees/hulc.git
@@ -28,14 +28,14 @@ sh install.sh
 ```
 If you encounter problems installing pyhash, you might have to downgrade setuptools to a version below 58.
 
-# Download 
-## CALVIN Dataset
+## Download 
+### CALVIN Dataset
 If you want to train on the [CALVIN](https://github.com/mees/calvin) dataset, choose a split with:
 ```bash
 $ cd $HULC_ROOT/dataset
 $ sh download_data.sh D | ABC | ABCD
 ```
-## Language Embeddings
+### Language Embeddings
 We provide the precomputed embeddings of the different Language Models we evaluate in the paper.
 The script assumes the corresponding split has been already downloaded.
 ```bash
@@ -43,7 +43,7 @@ $ cd $HULC_ROOT/dataset
 $ sh download_lang_embeddings.sh D | ABC | ABCD
 ```
 
-## Pre-trained Models
+### Pre-trained Models
 We provide our final models for all three CALVIN splits.
 ```bash
 $ cd $HULC_ROOT/checkpoints
@@ -92,15 +92,27 @@ You can instead specify the path to another checkpoint by adding this to the eva
 - `--debug`: print debug information and visualize environment.
 
 
-## Citation
+## Citations
 
 If you find the code useful, please cite:
 
+**HULC**
 ```
+bibtex
 @article{hulc22,
 author = {Oier Mees and Lukas Hermann and Wolfram Burgard},
 title = {What Matters in Language Conditioned Imitation Learning},
 journal={arXiv preprint arXiv},
 year = 2022,
+}
+```
+**CALVIN**
+```
+bibtex
+@article{calvin21,
+author = {Oier Mees and Lukas Hermann and Erick Rosete-Beas and Wolfram Burgard},
+title = {CALVIN: A benchmark for Language-Conditioned Policy Learning for Long-Horizon Robot Manipulation Tasks},
+journal={arXiv preprint arXiv:2112.03227},
+year = 2021,
 }
 ```
