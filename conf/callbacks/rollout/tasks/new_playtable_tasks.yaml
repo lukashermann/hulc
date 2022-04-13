@@ -1,4 +1,4 @@
-_target_: vr_env.envs.tasks.Tasks
+_target_: calvin_env.envs.tasks.Tasks
 tasks:
   # rotation
   rotate_red_block_right: [rotate_object, 'block_red', -60]
