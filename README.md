@@ -79,3 +79,28 @@ python hulc/training.py trainer.gpus=8 \
 The `vision_lang_shm` option loads the CALVIN dataset using shared memory cache, speeding up the training.
 If you want to use the original data loader just override the command with `datamodule/datasets=vision_lang`.
 If you have access to a Slurm cluster, follow this [guide](https://github.com/mees/hulc/blob/main/slurm_scripts/README.md).
+
+## Evaluation
+See detailed inference instructions on the [CALVIN repo](https://github.com/mees/calvin#muscle-evaluation-the-calvin-challenge).
+```
+python hulc/evaluation/evaluate_policy.py --dataset_path <PATH/TO/DATASET> --train_folder <PATH/TO/TRAINING/FOLDER>
+```
+Optional arguments:
+
+- `--checkpoint <PATH/TO/CHECKPOINT>`: by default, the evaluation loads the last checkpoint in the training log directory.
+You can instead specify the path to another checkpoint by adding this to the evaluation command.
+- `--debug`: print debug information and visualize environment.
+
+
+## Citation
+
+If you find the code useful, please cite:
+
+```
+@article{hulc22,
+author = {Oier Mees and Lukas Hermann and Wolfram Burgard},
+title = {What Matters in Language Conditioned Imitation Learning},
+journal={arXiv preprint arXiv},
+year = 2022,
+}
+```
