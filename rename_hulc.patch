@@ -1,0 +1,13 @@
+diff --git a/calvin_env/envs/play_lmp_wrapper.py b/calvin_env/envs/play_lmp_wrapper.py
+index 473f9ce..1368331 100644
+--- a/calvin_env/envs/play_lmp_wrapper.py
++++ b/calvin_env/envs/play_lmp_wrapper.py
+@@ -2,7 +2,7 @@ import logging
+ import os
+ from typing import Any, Dict, Tuple, Union
+ 
+-from calvin_agent.datasets.utils.episode_utils import process_depth, process_rgb, process_state
++from hulc.datasets.utils.episode_utils import process_depth, process_rgb, process_state
+ import gym
+ import numpy as np
+ import torch
