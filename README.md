@@ -2,14 +2,14 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[<b>What Matters in Language Conditioned Imitation Learning</b>](https://arxiv.org/pdf/foo.pdf)
+[<b>What Matters in Language Conditioned Imitation Learning</b>](https://arxiv.org/pdf/2204.06252.pdf)
 
 [Oier Mees](https://www.oiermees.com/), [Lukas Hermann](http://www2.informatik.uni-freiburg.de/~hermannl/), [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard)
 
  We present **HULC** (**H**ierarchical **U**niversal **L**anguage **C**onditioned Policies), an end-to-end model that can 
  learn  a wide variety of language conditioned robot skills from  offline free-form imitation datasets. HULC sets a new state of the art on the challenging CALVIN benchmark, 
  on learning a single 7-DoF policy that can perform long-horizon manipulation tasks in a 3D environment, directly from images, and only specified with natural language.
-This code accompanies the paper What Matters in Language Conditioned Imitation Learning, which can be found here. 
+This code accompanies the paper What Matters in Language Conditioned Imitation Learning, which can be found [here](https://arxiv.org/pdf/2204.06252.pdf). 
 We hope the code will be useful as a starting point for further research on language conditioned policy learning and will bring us closer towards general-purpose robots that can relate human language to their perception and actions. 
 
 ![](media/hulc_rollout.gif)
@@ -116,7 +116,7 @@ If you find the code useful, please cite:
 @article{hulc22,
 author = {Oier Mees and Lukas Hermann and Wolfram Burgard},
 title = {What Matters in Language Conditioned Imitation Learning},
-journal={arXiv preprint arXiv},
+journal={arXiv preprint arXiv:2204.06252},
 year = 2022,
 }
 ```
