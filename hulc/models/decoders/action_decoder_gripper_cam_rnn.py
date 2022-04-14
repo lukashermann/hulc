@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 from omegaconf import ListConfig, OmegaConf
@@ -11,7 +11,6 @@ import torch.nn.functional as F
 import hulc
 from hulc.models.decoders.action_decoder import ActionDecoder
 from hulc.models.decoders.utils.gripper_control import tcp_to_world_frame, world_to_tcp_frame
-from hulc.models.decoders.utils.rnn import gru_decoder, lstm_decoder, mlp_decoder, rnn_decoder
 
 logger = logging.getLogger(__name__)
 

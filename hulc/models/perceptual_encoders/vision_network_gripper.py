@@ -1,27 +1,22 @@
 #!/usr/bin/env python3
 
-from typing import Dict, Optional, Tuple
+from typing import Tuple
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.parameter import Parameter
 
 
 def nature_cnn(act_fn, num_c):
     return nn.Sequential(
         nn.Conv2d(num_c, 32, 8, stride=4),
-        # nn.BatchNorm2d(32),
         act_fn,
         nn.Conv2d(32, 64, 4, stride=2),
-        # nn.BatchNorm2d(64),
         act_fn,
         nn.Conv2d(64, 64, 3, stride=1),
-        # nn.BatchNorm2d(64),
         act_fn,
         nn.Flatten(start_dim=1),
         nn.Linear(64 * 7 * 7, 128),
-        # nn.BatchNorm1d(128),
         act_fn,
     )
 

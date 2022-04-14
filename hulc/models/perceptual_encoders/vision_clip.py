@@ -1,10 +1,8 @@
-from sentence_transformers import SentenceTransformer
 import torch
 from torch import nn
 import torch.nn.functional as F
-import torchvision
 
-from hulc.models.perceptual_encoders.clip import build_model, load_clip, tokenize
+from hulc.models.perceptual_encoders.clip import load_clip
 
 
 class VisionClip(nn.Module):

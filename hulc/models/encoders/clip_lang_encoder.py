@@ -20,7 +20,6 @@ class LangClip(nn.Module):
     def _load_clip(self, model_name: str) -> None:
         model, _ = load_clip(model_name, device=self.device)
         self.clip_rn50 = build_model(model.state_dict()).to(self.device)
-        del model
 
     def forward(self, x: List) -> torch.Tensor:
         with torch.no_grad():

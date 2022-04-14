@@ -3,21 +3,18 @@ import json
 import os.path
 from pathlib import Path
 
-import matplotlib
 from matplotlib import pyplot as plt
 import matplotlib.lines as mlines
 from MulticoreTSNE import MulticoreTSNE as TSNE
 import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
 import seaborn as sns
 
 # plt.rcParams['text.usetex'] = True
 from hulc.utils.utils import format_sftp_path
 
-matplotlib.rcParams["mathtext.fontset"] = "cm"
-matplotlib.rcParams["font.family"] = "STIXGeneral"
-matplotlib.pyplot.title(r"ABC123 vs $\mathrm{ABC123}^{123}$")
+plt.rcParams["mathtext.fontset"] = "cm"
+plt.rcParams["font.family"] = "STIXGeneral"
+plt.pyplot.title(r"ABC123 vs $\mathrm{ABC123}^{123}$")
 plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
 
@@ -224,7 +221,6 @@ def plot_curves(
     fig = plt.figure(figsize=(16, 10))
     colors = ["#1f77b4", "#d62728", "#2ca02c", "#9467bd", "#8c564b", "#e377c2", "#bcbd22"]  # , "#17becf"]
     linestyles = ["solid", "dashed", "dashdot", "dotted"]
-    color_index = 0
     ax = plt.subplot()  # Defines ax variable by creating an empty plot
     # Set the tick labels font
     for label in ax.get_xticklabels() + ax.get_yticklabels():
@@ -297,12 +293,9 @@ def plot_task_sr(results, labels):
 
 
 def plot_task_categories(results, labels):
-    num_trainings = len(results)
-    x_labels = []
     static_task_success_rates = []
     dynamic_task_success_rates = []
     scores = []
-    tasks_total = []
     for result in results.values():
         best_epoch, best_score = max([(epoch, v["avg_seq_len"]) for epoch, v in result.items()], key=lambda x: x[1])
         scores.append(best_score)
@@ -340,8 +333,6 @@ def plot_task_categories(results, labels):
     static_task_success_rates = [static_task_success_rates[i] for i in ranking]
     fig = plt.figure(figsize=(16, 10))
     colors = ["#1f77b4", "#d62728", "#2ca02c", "#9467bd", "#8c564b", "#e377c2", "#bcbd22"]  # , "#17becf"]
-    linestyles = ["solid", "dashed", "dashdot", "dotted"]
-    color_index = 0
     ax = plt.subplot()  # Defines ax variable by creating an empty plot
     # Set the tick labels font
     for label in ax.get_xticklabels() + ax.get_yticklabels():
@@ -425,9 +416,9 @@ def create_tsne_plot(results, tsne_data_dict):
                 )
             )[0]
         )
-        ids = ids[order]
+        # ids = ids[order]
         labels = labels[order]
-        latent_goals = latent_goals[order]
+        # latent_goals = latent_goals[order]
         plans = plans[order]
 
         x_tsne = TSNE(perplexity=10, n_jobs=8).fit_transform(plans)
@@ -491,8 +482,8 @@ def main():
     plot_task_categories(results, labels)
     plot_ranking(results, labels)
 
-    #tsne_data_dict = load_tsne_data(training_dirs)
-    #create_tsne_plot(results, tsne_data_dict)
+    # tsne_data_dict = load_tsne_data(training_dirs)
+    # create_tsne_plot(results, tsne_data_dict)
 
 
 if __name__ == "__main__":

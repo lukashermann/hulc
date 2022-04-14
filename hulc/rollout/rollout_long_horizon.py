@@ -3,7 +3,7 @@ from itertools import chain
 import logging
 import multiprocessing
 import os
-from typing import Any, List
+from typing import Any
 
 import hydra
 import numpy as np

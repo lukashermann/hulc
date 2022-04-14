@@ -1,16 +1,14 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Sized, Union
+from typing import Dict, List
 
 import hydra
 import numpy as np
-from omegaconf import DictConfig, ListConfig, OmegaConf
+from omegaconf import DictConfig, OmegaConf
 import pytorch_lightning as pl
 from pytorch_lightning.trainer.supporters import CombinedLoader
-import torch
-import torch.distributed as dist
-from torch.utils.data import DataLoader, Dataset, DistributedSampler, RandomSampler, Sampler, SequentialSampler
+from torch.utils.data import DataLoader
 import torchvision
 
 import hulc

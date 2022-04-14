@@ -6,11 +6,11 @@
 
 [Oier Mees](https://www.oiermees.com/), [Lukas Hermann](http://www2.informatik.uni-freiburg.de/~hermannl/), [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard)
 
- We present **HULC** (**H**ierarchical **U**niversal **L**anguage **C**onditioned Policies), an end-to-end model that can 
- learn  a wide variety of language conditioned robot skills from  offline free-form imitation datasets. HULC sets a new state of the art on the challenging CALVIN benchmark, 
+ We present **HULC** (**H**ierarchical **U**niversal **L**anguage **C**onditioned Policies), an end-to-end model that can
+ learn  a wide variety of language conditioned robot skills from  offline free-form imitation datasets. HULC sets a new state of the art on the challenging CALVIN benchmark,
  on learning a single 7-DoF policy that can perform long-horizon manipulation tasks in a 3D environment, directly from images, and only specified with natural language.
-This code accompanies the paper What Matters in Language Conditioned Imitation Learning, which can be found [here](https://arxiv.org/pdf/2204.06252.pdf). 
-We hope the code will be useful as a starting point for further research on language conditioned policy learning and will bring us closer towards general-purpose robots that can relate human language to their perception and actions. 
+This code accompanies the paper What Matters in Language Conditioned Imitation Learning, which can be found [here](https://arxiv.org/pdf/2204.06252.pdf).
+We hope the code will be useful as a starting point for further research on language conditioned policy learning and will bring us closer towards general-purpose robots that can relate human language to their perception and actions.
 
 ![](media/hulc_rollout.gif)
 ## Installation
@@ -29,7 +29,7 @@ sh install.sh
 ```
 If you encounter problems installing pyhash, you might have to downgrade setuptools to a version below 58.
 
-## Download 
+## Download
 ### CALVIN Dataset
 If you want to train on the [CALVIN](https://github.com/mees/calvin) dataset, choose a split with:
 ```bash
@@ -51,7 +51,7 @@ cd $HULC_ROOT/checkpoints
 sh download_model_weights.sh D | ABC | ABCD
 ```
 
-## Hardware Requirements 
+## Hardware Requirements
 
 We leverage [Pytorch Lightning's](https://www.pytorchlightning.ai/) DDP implementation to scale our training to 8x NVIDIA GPUs with **12GB** memory each.
 Evaluating the models requires a single NVIDIA GPU with **8GB**. As each GPU receives a batch of 64 sequences (32 language + 32 vision), the effective batch size is 512 for all our experiments.
@@ -97,16 +97,16 @@ You can instead specify the path to another checkpoint by adding this to the eva
 This work uses code from the following open-source projects and datasets:
 
 #### CALVIN
-Original:  [https://github.com/mees/calvin](https://github.com/mees/calvin)  
-License: [MIT](https://github.com/mees/calvin/blob/main/LICENSE)    
+Original:  [https://github.com/mees/calvin](https://github.com/mees/calvin)
+License: [MIT](https://github.com/mees/calvin/blob/main/LICENSE)
 
 #### Sentence-Transformers
-Original:  [https://github.com/UKPLab/sentence-transformers](https://github.com/UKPLab/sentence-transformers)  
-License: [Apache 2.0](https://github.com/UKPLab/sentence-transformers/blob/master/LICENSE)  
+Original:  [https://github.com/UKPLab/sentence-transformers](https://github.com/UKPLab/sentence-transformers)
+License: [Apache 2.0](https://github.com/UKPLab/sentence-transformers/blob/master/LICENSE)
 
 #### OpenAI CLIP
-Original: [https://github.com/openai/CLIP](https://github.com/openai/CLIP)  
-License: [MIT](https://github.com/openai/CLIP/blob/main/LICENSE)  
+Original: [https://github.com/openai/CLIP](https://github.com/openai/CLIP)
+License: [MIT](https://github.com/openai/CLIP/blob/main/LICENSE)
 ## Citations
 
 If you find the code useful, please cite:

@@ -2,8 +2,7 @@ from collections import defaultdict
 from functools import partial, reduce
 import logging
 from operator import add
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 import hydra
 import numpy as np
@@ -12,9 +11,7 @@ from pytorch_lightning import Callback, LightningModule, Trainer
 import torch
 import torch.distributed as dist
 
-import hulc
 from hulc.datasets.base_dataset import get_validation_window_size
-from hulc.models.play_lmp import HULC
 from hulc.rollout.rollout_video import RolloutVideo
 from hulc.utils.utils import get_portion_of_batch_ids
 

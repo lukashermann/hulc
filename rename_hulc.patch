@@ -5,7 +5,7 @@ index 473f9ce..1368331 100644
 @@ -2,7 +2,7 @@ import logging
  import os
  from typing import Any, Dict, Tuple, Union
- 
+
 -from calvin_agent.datasets.utils.episode_utils import process_depth, process_rgb, process_state
 +from hulc.datasets.utils.episode_utils import process_depth, process_rgb, process_state
  import gym

@@ -1,17 +1,13 @@
 from collections import Counter
 import logging
 from pathlib import Path
-import sys
-import time
 import typing
 
-import cv2
 import hydra
 import numpy as np
 from omegaconf import DictConfig, OmegaConf
 from omegaconf.errors import MissingMandatoryValue
 from pytorch_lightning import seed_everything
-import torch
 
 from hulc.evaluation.utils import imshow_tensor
 from hulc.models.encoders.language_network import SBert

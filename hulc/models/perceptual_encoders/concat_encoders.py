@@ -4,7 +4,7 @@ import hydra
 from omegaconf import DictConfig
 import torch
 import torch.nn as nn
-from torch.nn.functional import binary_cross_entropy_with_logits, mse_loss
+from torch.nn.functional import mse_loss
 
 
 class ConcatEncoders(nn.Module):

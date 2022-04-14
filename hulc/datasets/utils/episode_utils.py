@@ -197,5 +197,4 @@ def load_dataset_statistics(train_dataset_dir, val_dataset_dir, transforms):
                             transforms[dataset_type][modality] = ListConfig([*conf_transforms, dataset_trans])
         except FileNotFoundError:
             logger.warning("Could not load statistics.yaml")
-            pass
     return transforms

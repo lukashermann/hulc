@@ -10,13 +10,13 @@ import time
 sys.path.insert(0, Path(__file__).absolute().parents[2].as_posix())
 import hydra
 import numpy as np
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import OmegaConf
 from pytorch_lightning import seed_everything
 from termcolor import colored
 import torch
 from tqdm.auto import tqdm
-from calvin_env.envs.play_table_env import get_env
 
+from calvin_env.envs.play_table_env import get_env
 from hulc.evaluation.multistep_sequences import get_sequences
 from hulc.evaluation.utils import get_default_model_and_env, get_env_state_for_initial_condition, join_vis_lang
 from hulc.utils.utils import get_all_checkpoints, get_checkpoints_for_epochs, get_last_checkpoint

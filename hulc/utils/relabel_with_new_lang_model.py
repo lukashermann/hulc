@@ -1,13 +1,9 @@
-import argparse
 from pathlib import Path
 from typing import Dict
 
 import hydra
 import numpy as np
-from omegaconf import DictConfig, OmegaConf
-import torch
-
-import hulc
+from omegaconf import DictConfig
 
 """This script allows for re-annotating video sequences of PlayData.
    Parameters:
@@ -53,7 +49,7 @@ def main(cfg: DictConfig) -> None:
             language_embedding = model(list(ann))
             embeddings[task]["emb"] = language_embedding.cpu().numpy()
             embeddings[task]["ann"] = ann
-        np.save(save_path / "embeddings", embeddings)
+        np.save(save_path / "embeddings", embeddings)  # type:ignore
         print("Done saving val language embeddings for Rollouts !")
 
 

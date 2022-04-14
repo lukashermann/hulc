@@ -3,8 +3,7 @@ from collections import Counter
 from pathlib import Path
 
 import hydra
-import numpy as np
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import OmegaConf
 from pytorch_lightning import seed_everything
 from termcolor import colored
 import torch
@@ -34,9 +33,9 @@ def evaluate_policy(model, env, datamodule, lang_embeddings, args, checkpoint):
 
 
 def rollout(env, model, episode, task_oracle, args, task, lang_embeddings, val_annotations):
-    state_obs, rgb_obs, depth_obs = episode["robot_obs"], episode["rgb_obs"], episode["depth_obs"]
+    # state_obs, rgb_obs, depth_obs = episode["robot_obs"], episode["rgb_obs"], episode["depth_obs"]
     reset_info = episode["state_info"]
-    idx = episode["idx"]
+    # idx = episode["idx"]
     obs = env.reset(robot_obs=reset_info["robot_obs"][0], scene_obs=reset_info["scene_obs"][0])
     # get lang annotation for subtask
     lang_annotation = val_annotations[task][0]

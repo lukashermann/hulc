@@ -1,4 +1,4 @@
-from collections import Counter, defaultdict
+from collections import defaultdict
 from functools import partial
 from itertools import chain
 import logging

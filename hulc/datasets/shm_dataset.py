@@ -3,7 +3,6 @@ from multiprocessing.shared_memory import SharedMemory
 from typing import Dict, List, Optional
 
 import numpy as np
-from pytorch_lightning.utilities import rank_zero_only
 
 from hulc.datasets.base_dataset import BaseDataset, get_validation_window_size
 from hulc.datasets.utils.episode_utils import (

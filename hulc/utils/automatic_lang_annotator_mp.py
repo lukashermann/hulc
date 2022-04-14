@@ -8,7 +8,6 @@ import typing
 from typing import Any, Optional
 
 import hydra
-import numpy
 import numpy as np
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import Callback, LightningModule, seed_everything, Trainer
