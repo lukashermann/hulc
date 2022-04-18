@@ -247,7 +247,6 @@ def plot_curves(
 
 def plot_task_sr(results, labels):
     num_trainings = len(results)
-    x_labels = []
     task_success_rates = []
     scores = []
     tasks_total = []

@@ -65,7 +65,7 @@ def main():
         std_out = log_dir / f"stdout_{i}.out"
         std_err = log_dir / f"stderr_{i}.err"
         with open(std_out, "wb") as out, open(std_err, "wb") as err:
-            pro = subprocess.Popen(cmd, stdout=out, stderr=err, preexec_fn=os.setpgrp)
+            subprocess.Popen(cmd, stdout=out, stderr=err, preexec_fn=os.setpgrp)
 
 
 if __name__ == "__main__":

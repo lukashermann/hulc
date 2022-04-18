@@ -5,7 +5,6 @@ from pathlib import Path
 import cv2
 import hydra
 import numpy as np
-from numpy import pi
 from omegaconf import OmegaConf
 import pyhash
 import torch
@@ -144,7 +143,7 @@ def get_env_state_for_initial_condition(initial_condition):
             1.0,
         ]
     )
-    block_rot_z_range = (pi / 2 - pi / 8, pi / 2 + pi / 8)
+    block_rot_z_range = (np.pi / 2 - np.pi / 8, np.pi / 2 + np.pi / 8)
     block_slider_left = np.array([-2.40851662e-01, 9.24044687e-02, 4.60990009e-01])
     block_slider_right = np.array([7.03416330e-02, 9.24044687e-02, 4.60990009e-01])
     block_table = [

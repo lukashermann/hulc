@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Tuple
 
 import hydra
 import numpy as np
-import pytorch_lightning as pl
 from pytorch_lightning import Callback, LightningModule, Trainer
 import torch
 import torch.distributed as dist
@@ -411,7 +410,8 @@ class Rollout(Callback):
                 batch_seq_ids.append(idx.cpu().numpy()[i])
         return task_ids, batch_seq_ids
 
-    def on_save_checkpoint(self, trainer: Trainer, pl_module: pl.LightningModule, checkpoint: Dict[str, Any]) -> dict:  # type: ignore
+    def on_save_checkpoint(self, trainer: Trainer, pl_module: pytorch_lightning.LightningModule,
+                           checkpoint: Dict[str, Any]) -> dict:  # type: ignore
         checkpoint["task_to_id_dict"] = self.task_to_id_dict
         checkpoint["id_to_task_dict"] = self.id_to_task_dict
         checkpoint["groundtruth_task_counter"] = self.groundtruth_task_counter

@@ -2,11 +2,10 @@ import logging
 import os
 from pathlib import Path
 import sys
-from typing import Callable, List, Union
+from typing import List, Union
 
 sys.path.insert(0, Path(__file__).absolute().parents[1].as_posix())
 import hydra
-import numpy as np
 from omegaconf import DictConfig, ListConfig, OmegaConf
 from pytorch_lightning import Callback, LightningModule, seed_everything, Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor

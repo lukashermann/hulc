@@ -1,9 +1,5 @@
-from collections import Counter
 import logging
 from pathlib import Path
-import sys
-import time
-import typing
 
 import cv2
 import hydra
@@ -13,7 +9,6 @@ from omegaconf.errors import MissingMandatoryValue
 from pytorch_lightning import seed_everything
 import torch
 
-import hulc
 from hulc.evaluation.utils import imshow_tensor
 from hulc.models.play_lmp import HULC
 from hulc.utils.utils import get_last_checkpoint

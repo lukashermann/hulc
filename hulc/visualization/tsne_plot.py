@@ -1,13 +1,12 @@
 import io
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from MulticoreTSNE import MulticoreTSNE as TSNE
 import numpy as np
 from PIL import Image
 import plotly.express as px
 import plotly.graph_objects as go
-import pytorch_lightning as pl
 from pytorch_lightning import Callback, LightningModule, Trainer
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.utilities.types import STEP_OUTPUT
@@ -40,8 +39,8 @@ class TSNEPlot(Callback):
 
     def on_validation_batch_end(
         self,
-        trainer: "pl.Trainer",
-        pl_module: "pl.LightningModule",
+        trainer: "pytorch_lightning.Trainer",
+        pl_module: "pytorch_lightning.LightningModule",
         outputs: Optional[STEP_OUTPUT],
         batch: Any,
         batch_idx: int,
