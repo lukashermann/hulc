@@ -45,7 +45,7 @@ class TSNEPlot(Callback):
         batch,
         batch_idx,
         dataloader_idx,
-    ) -> None:
+    ):
         self.sampled_plans.append(outputs["sampled_plan_pp_vis"])  # type: ignore
         self.all_idx.append(outputs["idx_vis"])  # type: ignore
 
