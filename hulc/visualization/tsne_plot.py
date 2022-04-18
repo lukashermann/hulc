@@ -39,12 +39,12 @@ class TSNEPlot(Callback):
 
     def on_validation_batch_end(
         self,
-        trainer: "pytorch_lightning.Trainer",
-        pl_module: "pytorch_lightning.LightningModule",
-        outputs: Optional[STEP_OUTPUT],
-        batch: Any,
-        batch_idx: int,
-        dataloader_idx: int,
+        trainer,
+        pl_module,
+        outputs,
+        batch,
+        batch_idx,
+        dataloader_idx,
     ) -> None:
         self.sampled_plans.append(outputs["sampled_plan_pp_vis"])  # type: ignore
         self.all_idx.append(outputs["idx_vis"])  # type: ignore
