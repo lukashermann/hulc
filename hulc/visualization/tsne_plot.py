@@ -1,6 +1,5 @@
 import io
 import logging
-from typing import Any, Optional
 
 from MulticoreTSNE import MulticoreTSNE as TSNE
 import numpy as np
@@ -9,7 +8,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pytorch_lightning import Callback, LightningModule, Trainer
 from pytorch_lightning.loggers import WandbLogger
-from pytorch_lightning.utilities.types import STEP_OUTPUT
 import torch
 import torch.distributed as dist
 

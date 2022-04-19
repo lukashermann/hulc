@@ -1,7 +1,7 @@
 from typing import Optional, Tuple
 
 import torch
-from torch import nn
+import torch.nn as nn
 
 
 class ActionDecoder(nn.Module):

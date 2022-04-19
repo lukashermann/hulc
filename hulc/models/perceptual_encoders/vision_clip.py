@@ -1,5 +1,5 @@
 import torch
-from torch import nn
+import torch.nn as nn
 import torch.nn.functional as F
 
 from hulc.models.perceptual_encoders.clip import load_clip

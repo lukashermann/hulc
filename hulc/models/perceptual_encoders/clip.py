@@ -13,7 +13,7 @@ import warnings
 import numpy as np
 from PIL import Image
 import torch
-from torch import nn
+import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.transforms import CenterCrop, Compose, Normalize, Resize, ToTensor
 from tqdm import tqdm
