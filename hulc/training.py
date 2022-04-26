@@ -12,7 +12,7 @@ from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.utilities import rank_zero_only
 
-import hulc.models.play_lmp as models_m
+import hulc.models.hulc as models_m
 from hulc.utils.utils import (
     get_git_commit_hash,
     get_last_checkpoint,
@@ -23,58 +23,80 @@ from hulc.utils.utils import (
 logger = logging.getLogger(__name__)
 
 
-def wrap_train(config_name):
-    @hydra.main(config_path="../conf", config_name=f"{config_name}.yaml")
-    def train(cfg: DictConfig) -> None:
-        # sets seeds for numpy, torch, python.random and PYTHONHASHSEED.
-        seed_everything(cfg.seed, workers=True)  # type: ignore
-        datamodule = hydra.utils.instantiate(cfg.datamodule)
-        chk = get_last_checkpoint(Path.cwd())
+@hydra.main(config_path="../conf", config_name="config")
+def train(cfg: DictConfig) -> None:
+    """
+    This is called to start a training.
 
-        # Load Model
-        if chk is not None:
-            model = getattr(models_m, cfg.model["_target_"].split(".")[-1]).load_from_checkpoint(chk.as_posix())
-        else:
-            model = hydra.utils.instantiate(cfg.model)
-            if "pretrain_chk" in cfg:
-                initialize_pretrained_weights(model, cfg)
+    Args:
+        cfg: hydra config
+    """
+    # sets seeds for numpy, torch, python.random and PYTHONHASHSEED.
+    seed_everything(cfg.seed, workers=True)  # type: ignore
+    datamodule = hydra.utils.instantiate(cfg.datamodule)
+    chk = get_last_checkpoint(Path.cwd())
 
-        log_rank_0(f"Training with the following config:\n{OmegaConf.to_yaml(cfg)}")
-        log_rank_0("Repo commit hash: {}".format(get_git_commit_hash(Path(hydra.utils.to_absolute_path(__file__)))))
-        log_rank_0(print_system_env_info())
+    # Load Model
+    if chk is not None:
+        model = getattr(models_m, cfg.model["_target_"].split(".")[-1]).load_from_checkpoint(chk.as_posix())
+    else:
+        model = hydra.utils.instantiate(cfg.model)
+        if "pretrain_chk" in cfg:
+            initialize_pretrained_weights(model, cfg)
 
-        train_logger = setup_logger(cfg, model)
-        callbacks = setup_callbacks(cfg.callbacks)
-        lr_logger = LearningRateMonitor(logging_interval="step")
-        callbacks.append(lr_logger)
+    log_rank_0(f"Training with the following config:\n{OmegaConf.to_yaml(cfg)}")
+    log_rank_0("Repo commit hash: {}".format(get_git_commit_hash(Path(hydra.utils.to_absolute_path(__file__)))))
+    log_rank_0(print_system_env_info())
 
-        trainer_args = {
-            **cfg.trainer,
-            "logger": train_logger,
-            "callbacks": callbacks,
-            "benchmark": False,
-        }
+    train_logger = setup_logger(cfg, model)
+    callbacks = setup_callbacks(cfg.callbacks)
+    lr_logger = LearningRateMonitor(logging_interval="step")
+    callbacks.append(lr_logger)
 
-        # Configure multi-GPU training
-        if is_multi_gpu_training(trainer_args["gpus"]):  # type: ignore
-            trainer_args["strategy"] = "ddp"
-            if not cfg.slurm:
-                modify_argv_hydra()
+    trainer_args = {
+        **cfg.trainer,
+        "logger": train_logger,
+        "callbacks": callbacks,
+        "benchmark": False,
+    }
 
-        trainer = Trainer(**trainer_args)
+    # Configure multi-GPU training
+    if is_multi_gpu_training(trainer_args["gpus"]):  # type: ignore
+        trainer_args["strategy"] = "ddp"
+        if not cfg.slurm:
+            modify_argv_hydra()
 
-        # Start training
-        trainer.fit(model, datamodule=datamodule, ckpt_path=chk)  # type: ignore
+    trainer = Trainer(**trainer_args)
 
-    train()
+    # Start training
+    trainer.fit(model, datamodule=datamodule, ckpt_path=chk)  # type: ignore
 
 
 def setup_callbacks(callbacks_cfg: DictConfig) -> List[Callback]:
+    """
+    Instantiate all training callbacks.
+
+    Args:
+        callbacks_cfg: DictConfig with all callback params
+
+    Returns:
+        List of instantiated callbacks.
+    """
     callbacks = [hydra.utils.instantiate(cb) for cb in callbacks_cfg.values()]
     return callbacks
 
 
 def setup_logger(cfg: DictConfig, model: LightningModule) -> LightningLoggerBase:
+    """
+    Set up the logger (tensorboard or wandb) from hydra config.
+
+    Args:
+        cfg: Hydra config
+        model: LightningModule
+
+    Returns:
+        logger
+    """
     pathlib_cwd = Path.cwd()
     if "group" in cfg.logger:
         cfg.logger.group = pathlib_cwd.parent.name
@@ -88,6 +110,10 @@ def setup_logger(cfg: DictConfig, model: LightningModule) -> LightningLoggerBase
 
 
 def modify_argv_hydra() -> None:
+    """
+    To make hydra work with pytorch-lightning and ddp, we modify sys.argv for the child processes spawned with ddp.
+    This is only used when NOT using slurm.
+    """
     cwd = Path.cwd().as_posix()
     cwd = f'"{cwd}"'
     sys.argv = sys.argv[:1]
@@ -110,6 +136,16 @@ def modify_argv_hydra() -> None:
 
 
 def is_multi_gpu_training(gpus: Union[int, str, ListConfig]) -> bool:
+    """
+    Parse pytorch-lightning gpu device selection,
+    see https://pytorch-lightning.readthedocs.io/en/stable/advanced/multi_gpu.html
+
+    Args:
+        gpus: int, str or ListConfig specifying gpu devices
+
+    Returns:
+        True if multi-gpu training (ddp), False otherwise.
+    """
     return (
         (isinstance(gpus, int) and (gpus > 1 or gpus == -1))
         or (isinstance(gpus, str) and len(gpus) > 1)
@@ -123,19 +159,5 @@ def log_rank_0(*args, **kwargs):
     logger.info(*args, **kwargs)
 
 
-def setup_config():
-    config_str = next((x for x in sys.argv if "config_name" in x), None)
-    if config_str is not None:
-        config_name = config_str.split("=")[1]
-        sys.argv.remove(config_str)
-        os.environ["HYDRA_CONFIG_NAME"] = config_name
-        return config_name
-    elif "HYDRA_CONFIG_NAME" in os.environ:
-        return os.environ["HYDRA_CONFIG_NAME"]
-    else:
-        return "config"
-
-
 if __name__ == "__main__":
-    conf = setup_config()
-    wrap_train(conf)
+    train()

@@ -13,13 +13,13 @@ from calvin_env.utils.utils import EglDeviceNotFoundError, get_egl_device_id
 logger = logging.getLogger(__name__)
 
 
-class PlayLMPWrapper(gym.Wrapper):
+class HulcWrapper(gym.Wrapper):
     def __init__(self, dataset_loader, device, show_gui=False, **kwargs):
         self.set_egl_device(device)
         env = get_env(
             dataset_loader.abs_datasets_dir, show_gui=show_gui, obs_space=dataset_loader.observation_space, **kwargs
         )
-        super(PlayLMPWrapper, self).__init__(env)
+        super(HulcWrapper, self).__init__(env)
         self.observation_space_keys = dataset_loader.observation_space
         self.transforms = dataset_loader.transforms
         self.proprio_state = dataset_loader.proprio_state

@@ -11,6 +11,7 @@ import torch.nn.functional as F
 import hulc
 from hulc.models.decoders.action_decoder import ActionDecoder
 from hulc.models.decoders.utils.gripper_control import tcp_to_world_frame, world_to_tcp_frame
+from hulc.models.decoders.utils.rnn import gru_decoder, lstm_decoder, mlp_decoder, rnn_decoder  # needed for line 60
 
 logger = logging.getLogger(__name__)
 

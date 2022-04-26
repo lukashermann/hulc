@@ -10,7 +10,7 @@ from pytorch_lightning import seed_everything
 import torch
 
 from hulc.evaluation.utils import imshow_tensor
-from hulc.models.play_lmp import HULC
+from hulc.models.hulc import Hulc
 from hulc.utils.utils import get_last_checkpoint
 
 logger = logging.getLogger(__name__)
@@ -63,7 +63,7 @@ def test_policy(input_cfg: DictConfig) -> None:
     tasks = hydra.utils.instantiate(cfg.callbacks.rollout.tasks)
     checkpoint = get_checkpoint(cfg)
     logger.info("Loading model from checkpoint.")
-    model = HULC.load_from_checkpoint(checkpoint)
+    model = Hulc.load_from_checkpoint(checkpoint)
     model.freeze()
     # model.action_decoder._setup_action_bounds(cfg.datamodule.root_data_dir, None, None)
     model = model.cuda(0)

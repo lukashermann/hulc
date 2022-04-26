@@ -9,7 +9,7 @@ from omegaconf import OmegaConf
 import pyhash
 import torch
 
-from hulc.models.play_lmp import HULC
+from hulc.models.hulc import Hulc
 from hulc.utils.utils import add_text, format_sftp_path
 
 hasher = pyhash.fnv1_32()
@@ -45,7 +45,7 @@ def get_default_model_and_env(train_folder, dataset_path, checkpoint, env=None, 
 
     checkpoint = format_sftp_path(checkpoint)
     print(f"Loading model from {checkpoint}")
-    model = HULC.load_from_checkpoint(checkpoint)
+    model = Hulc.load_from_checkpoint(checkpoint)
     model.freeze()
     if cfg.model.action_decoder.get("load_action_bounds", False):
         model.action_decoder._setup_action_bounds(cfg.datamodule.root_data_dir, None, None, True)
