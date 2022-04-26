@@ -23,7 +23,7 @@ def log_rank_0(*args, **kwargs):
     logger.info(*args, **kwargs)
 
 
-class HULC(pl.LightningModule):
+class PlayLMP(pl.LightningModule):
     def __init__(
         self,
         perceptual_encoder: DictConfig,
@@ -52,7 +52,7 @@ class HULC(pl.LightningModule):
         lang_discriminator: Optional[DictConfig] = None,
         clip_proj: Optional[DictConfig] = None,
     ):
-        super(HULC, self).__init__()
+        super(PlayLMP, self).__init__()
         self.perceptual_encoder = hydra.utils.instantiate(perceptual_encoder, device=self.device)
         self.setup_input_sizes(
             self.perceptual_encoder,
