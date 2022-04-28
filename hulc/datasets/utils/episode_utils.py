@@ -1,6 +1,8 @@
 import logging
+import os
 from pathlib import Path
-from typing import Dict
+import re
+from typing import Dict, Optional, Tuple
 
 import numpy as np
 from omegaconf import DictConfig, ListConfig, OmegaConf
@@ -150,8 +152,13 @@ def process_language(episode: Dict[str, np.ndarray], transforms: Dict, with_lang
 
 def get_state_info_dict(episode: Dict[str, np.ndarray]) -> Dict[str, Dict[str, torch.Tensor]]:
     """
-    :param episode: episode loaded by dataset loader
-    :return: info dict of full robot and scene state (for env resets)
+    Create a dictionary with raw state observations for environment resets.
+
+    Args:
+        episode: Sequence dictionary.
+
+    Returns:
+         Info dict of full robot and scene state (for env resets).
     """
     return {
         "state_info": {
@@ -170,6 +177,7 @@ def load_dataset_statistics(train_dataset_dir, val_dataset_dir, transforms):
         train_dataset_dir: path of the training folder
         val_dataset_dir: path of the validation folder
         transforms: transforms loaded from hydra conf
+
     Returns:
         transforms: potentially updated transforms
     """
@@ -198,3 +206,28 @@ def load_dataset_statistics(train_dataset_dir, val_dataset_dir, transforms):
         except FileNotFoundError:
             logger.warning("Could not load statistics.yaml")
     return transforms
+
+
+def lookup_naming_pattern(dataset_dir: Path, save_format: str) -> Tuple[Tuple[Path, str], int]:
+    """
+    Check naming pattern of dataset files.
+
+    Args:
+        dataset_dir: Path to dataset.
+        save_format: File format (CALVIN default is npz).
+
+    Returns:
+        naming_pattern: 'file_0000001.npz' -> ('file_', '.npz')
+        n_digits: Zero padding of file enumeration.
+    """
+    it = os.scandir(dataset_dir)
+    while True:
+        filename = Path(next(it))
+        if save_format in filename.suffix:
+            break
+    aux_naming_pattern = re.split(r"\d+", filename.stem)
+    naming_pattern = (filename.parent / aux_naming_pattern[0], filename.suffix)
+    n_digits = len(re.findall(r"\d+", filename.stem)[0])
+    assert len(naming_pattern) == 2
+    assert n_digits > 0
+    return naming_pattern, n_digits

@@ -13,14 +13,14 @@ import torchvision
 
 import hulc
 from hulc.datasets.utils.episode_utils import load_dataset_statistics
-from hulc.datasets.utils.shared_memory_loader import SharedMemoryLoader
+from hulc.datasets.utils.shared_memory_utils import load_shm_lookup, save_shm_lookup, SharedMemoryLoader
 
 logger = logging.getLogger(__name__)
 DEFAULT_TRANSFORM = OmegaConf.create({"train": None, "val": None})
 ONE_EP_DATASET_URL = "http://www.informatik.uni-freiburg.de/~meeso/50steps.tar.xz"
 
 
-class PlayDataModule(pl.LightningDataModule):
+class HulcDataModule(pl.LightningDataModule):
     def __init__(
         self,
         datasets: DictConfig,
@@ -54,18 +54,27 @@ class PlayDataModule(pl.LightningDataModule):
 
         # download and unpack images
         if not dataset_exist:
+            if "CI" not in os.environ:
+                print(f"No dataset found in {self.training_dir}.")
+                print("For information how to download to full CALVIN dataset, please visit")
+                print("https://github.com/mees/calvin/tree/main/dataset")
+                print("Do you wish to download small debug dataset to continue training?")
+                s = input("YES / no")
+                if s == "no":
+                    exit()
             logger.info(f"downloading dataset to {self.training_dir} and {self.val_dir}")
             torchvision.datasets.utils.download_and_extract_archive(ONE_EP_DATASET_URL, self.training_dir)
             torchvision.datasets.utils.download_and_extract_archive(ONE_EP_DATASET_URL, self.val_dir)
 
         if self.use_shm:
+            # When using shared memory dataset, initialize lookups
             train_shmem_loader = SharedMemoryLoader(self.datasets_cfg, self.training_dir)
             train_shm_lookup = train_shmem_loader.load_data_in_shared_memory()
 
             val_shmem_loader = SharedMemoryLoader(self.datasets_cfg, self.val_dir)
             val_shm_lookup = val_shmem_loader.load_data_in_shared_memory()
 
-            save_lang_data(train_shm_lookup, val_shm_lookup)
+            save_shm_lookup(train_shm_lookup, val_shm_lookup)
 
     def setup(self, stage=None):
         transforms = load_dataset_statistics(self.training_dir, self.val_dir, self.transforms)
@@ -82,7 +91,7 @@ class PlayDataModule(pl.LightningDataModule):
         self.train_datasets, self.train_sampler, self.val_datasets, self.val_sampler = {}, {}, {}, {}
 
         if self.use_shm:
-            train_shm_lookup, val_shm_lookup = load_lang_data()
+            train_shm_lookup, val_shm_lookup = load_shm_lookup()
 
         for _, dataset in self.datasets_cfg.items():
             train_dataset = hydra.utils.instantiate(
@@ -90,8 +99,8 @@ class PlayDataModule(pl.LightningDataModule):
             )
             val_dataset = hydra.utils.instantiate(dataset, datasets_dir=self.val_dir, transforms=self.val_transforms)
             if self.use_shm:
-                train_dataset.set_lang_data(train_shm_lookup)
-                val_dataset.set_lang_data(val_shm_lookup)
+                train_dataset.setup_shm_lookup(train_shm_lookup)
+                val_dataset.setup_shm_lookup(val_shm_lookup)
             key = dataset.key
             self.train_datasets[key] = train_dataset
             self.val_datasets[key] = val_dataset
@@ -120,16 +129,3 @@ class PlayDataModule(pl.LightningDataModule):
         }
         combined_val_loaders = CombinedLoader(val_dataloaders, "max_size_cycle")
         return combined_val_loaders
-
-
-def save_lang_data(train_shm_lookup, val_shm_lookup):
-    save_path = Path("/tmp/") if "TMPDIR" not in os.environ else Path(os.environ["TMPDIR"])
-    np.save(save_path / "train_shm_lookup.npy", train_shm_lookup)
-    np.save(save_path / "val_shm_lookup.npy", val_shm_lookup)
-
-
-def load_lang_data():
-    load_path = Path("/tmp/") if "TMPDIR" not in os.environ else Path(os.environ["TMPDIR"])
-    train_shm_lookup = np.load(load_path / "train_shm_lookup.npy", allow_pickle=True).item()
-    val_shm_lookup = np.load(load_path / "val_shm_lookup.npy", allow_pickle=True).item()
-    return train_shm_lookup, val_shm_lookup

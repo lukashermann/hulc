@@ -1,4 +1,4 @@
-_target_: hulc.datasets.npz_dataset.NpzDataset
+_target_: hulc.datasets.disk_dataset.DiskDataset
 key: "vis"
 save_format: "npz"
 batch_size: 32
@@ -7,5 +7,5 @@ max_window_size: 32
 proprio_state: ${datamodule.proprioception_dims}
 obs_space: ${datamodule.observation_space}
 pad: true
-lang_folder: "lang_annotations"
+lang_folder: "lang_paraphrase-MiniLM-L3-v2"
 num_workers: 2

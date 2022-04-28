@@ -1,9 +1,9 @@
 import logging
-import os
 from pathlib import Path
 import sys
 from typing import List, Union
 
+# This is for using the locally installed repo clone when using slurm
 sys.path.insert(0, Path(__file__).absolute().parents[1].as_posix())
 import hydra
 from omegaconf import DictConfig, ListConfig, OmegaConf

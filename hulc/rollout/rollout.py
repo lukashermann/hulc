@@ -132,9 +132,7 @@ class Rollout(Callback):
                     save_dir=self.save_dir,
                 )
             self.embeddings = (
-                np.load(dataset.abs_datasets_dir / self.lang_folder / "embeddings.npy", allow_pickle=True,).reshape(
-                    -1
-                )[0]
+                np.load(dataset.abs_datasets_dir / self.lang_folder / "embeddings.npy", allow_pickle=True).item()
                 if "lang" in self.modalities
                 else None
             )

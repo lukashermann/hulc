@@ -6,21 +6,33 @@ import multiprocessing
 from multiprocessing.shared_memory import SharedMemory
 import os
 from pathlib import Path
-import re
 import signal
+from typing import DefaultDict, Dict, List, Optional, Tuple
 
 import numpy as np
+from omegaconf import DictConfig
 from pytorch_lightning import Callback, LightningModule, Trainer
 from tqdm import tqdm
 
 from hulc.datasets.shm_dataset import ShmDataset
+from hulc.datasets.utils.episode_utils import lookup_naming_pattern
 
 log = logging.getLogger(__name__)
 
 
-def gather_results(return_dict):
-    episode_lookup_vision = defaultdict(list)
-    lang_episode_dict = defaultdict(dict)
+def gather_results(return_dict: Dict) -> Tuple[Dict, Dict]:
+    """
+    Combine results of worker processes.
+
+    Args:
+        return_dict: Dictionary with results of worker processes.
+
+    Returns:
+        episode_lookup_vision: Combined results of vision lookup.
+        lang_episode_dict: Combined results of lanugage lookup.
+    """
+    episode_lookup_vision: Dict = defaultdict(list)
+    lang_episode_dict: Dict = defaultdict(dict)
     for proc in sorted(return_dict):
         for key in return_dict[proc][0]:
             episode_lookup_vision[key] += return_dict[proc][0][key]
@@ -28,29 +40,82 @@ def gather_results(return_dict):
     return episode_lookup_vision, lang_episode_dict
 
 
-def check_shm_lookup_exists(dataset_type):
+def check_shm_lookup_exists(dataset_type: str) -> Optional[Dict]:
+    """
+    Check if there is already a shared memory lookup file saved on the disk.
+
+    Args:
+        dataset_type: 'train' or 'val'.
+
+    Returns:
+        Lookup file if exists, None otherwise.
+    """
     load_path = Path("/tmp/") if "TMPDIR" not in os.environ else Path(os.environ["TMPDIR"])
     try:
-        data = np.load(load_path / f"{dataset_type}_shm_lookup.npy", allow_pickle=True).item()
+        data: Dict = np.load(load_path / f"{dataset_type}_shm_lookup.npy", allow_pickle=True).item()
         return data
     except FileNotFoundError:
         return None
 
 
-class SharedMemoryLoader:
-    def __init__(self, datasets_cfg, dataset_dir):
+def save_shm_lookup(train_shm_lookup: Dict, val_shm_lookup: Dict) -> None:
+    """
+    Save shared memory lookups to disk, such that they can be reused by ddp subprocesses.
 
+    Args:
+        train_shm_lookup: Shared memory lookup for training data.
+        val_shm_lookup: Shared memory lookup for validation data.
+    """
+    save_path = Path("/tmp/") if "TMPDIR" not in os.environ else Path(os.environ["TMPDIR"])
+    np.save(save_path / "train_shm_lookup.npy", train_shm_lookup)
+    np.save(save_path / "val_shm_lookup.npy", val_shm_lookup)
+
+
+def load_shm_lookup() -> Tuple[Dict, Dict]:
+    """
+    Load shared memory lookup.
+
+    Returns:
+        train_shm_lookup: Shared memory lookup for training data.
+        val_shm_lookup: Shared memory lookup for validation data.
+    """
+    load_path = Path("/tmp/") if "TMPDIR" not in os.environ else Path(os.environ["TMPDIR"])
+    train_shm_lookup: Dict = np.load(load_path / "train_shm_lookup.npy", allow_pickle=True).item()
+    val_shm_lookup: Dict = np.load(load_path / "val_shm_lookup.npy", allow_pickle=True).item()
+    return train_shm_lookup, val_shm_lookup
+
+
+class SharedMemoryLoader:
+    """
+    Helper class for loading dataset into shared memory.
+
+    Args:
+         datasets_cfg: Hydra config of datasets.
+         dataset_dir: Path to dataset.
+    """
+
+    def __init__(self, datasets_cfg: DictConfig, dataset_dir: Path):
         self.obs_space = datasets_cfg.lang_dataset.obs_space
         self.dataset_dir = dataset_dir
         self.dataset_type = "train" if "training" in dataset_dir.as_posix() else "val"
         self.lang_folder = datasets_cfg.lang_dataset.lang_folder
-        self.save_format = "npz"
-        self.naming_pattern, self.n_digits = self.lookup_naming_pattern()
+        self.naming_pattern, self.n_digits = lookup_naming_pattern(self.dataset_dir, "npz")
         self.min_window_size_vision = datasets_cfg.vision_dataset.min_window_size
         self.min_window_size_lang = datasets_cfg.lang_dataset.min_window_size
         self.n_proc = 8
 
-    def worker_process(self, proc_num, ep_start_end_ids, offsets, shmem, lang_ep_start_end_ids, return_dict):
+    def _worker_process(self, proc_num, ep_start_end_ids, offsets, shmem, lang_ep_start_end_ids, return_dict):
+        """
+        Multiprocessing worker to speed up the loading of the data into shared memory.
+
+        Args:
+            proc_num: Process number.
+            ep_start_end_ids: Episode start and end indices for this worker.
+            offsets: Offset for addressing right portion of shared array.
+            shmem: Shared memory handles.
+            lang_ep_start_end_ids: Episode start and end indices of language data for this worker.
+            return_dict: Dictionary for saving the results.
+        """
         episode_lookup_vision = defaultdict(list)
         lang_episode_dict = defaultdict(dict)
         if proc_num == 0:
@@ -58,7 +123,7 @@ class SharedMemoryLoader:
         else:
             pbar = None
         for i, (start_idx, end_idx) in enumerate(ep_start_end_ids):
-            seq = self.zip_sequence(start_idx, end_idx, pbar)
+            seq = self._zip_sequence(start_idx, end_idx, pbar)
             for key, array in seq.items():
                 shared_array = np.ndarray(array.shape, dtype=array.dtype, buffer=shmem[key].buf, offset=offsets[key])
                 shared_array[:] = array[:]
@@ -73,11 +138,17 @@ class SharedMemoryLoader:
             pbar.close()
 
     def load_data_in_shared_memory(self):
+        """
+        Load the dataset from disk into shared memory once at the beginning of the training to speed up data loading.
+
+        Returns:
+            Shared memory lookup dict.
+        """
         lang_data = np.load(self.dataset_dir / self.lang_folder / "auto_lang_ann.npy", allow_pickle=True).item()
         ep_start_end_ids = np.load(self.dataset_dir / "ep_start_end_ids.npy")
         lang_ep_start_end_ids = np.array(lang_data["info"]["indx"])  # each of them are 64
         lang_ann = lang_data["language"]["emb"]
-        shmem, shapes, sizes, dtypes, shmem_lookup = self.create_shmem(ep_start_end_ids)
+        shmem, shapes, sizes, dtypes, shmem_lookup = self._init_shmem(ep_start_end_ids)
 
         if shmem_lookup is not None:
             # using existing shared memory
@@ -105,7 +176,7 @@ class SharedMemoryLoader:
         # load vision data with multiple processes
         for i in range(self.n_proc):
             p = multiprocessing.Process(
-                target=self.worker_process,
+                target=self._worker_process,
                 args=(i, split_indices[i], offsets[i], shmem, lang_ep_start_end_ids, return_dict),
             )
             processes.append(p)
@@ -134,14 +205,27 @@ class SharedMemoryLoader:
         }
         return result
 
-    def create_shmem(self, ep_start_end_ids):
+    def _init_shmem(self, ep_start_end_ids: np.ndarray) -> Tuple[Dict, Dict, Dict, Dict, Optional[Dict]]:
+        """
+        Initialize shared memory.
+
+        Args:
+            ep_start_end_ids: Episode start and end indices of dataset.
+
+        Returns:
+            shmem: Dictionary with shared memory handles for each dataset key (rgb_static, etc ...).
+            shapes: Dictionary with the shape of one datapoint for each dataset key.
+            sizes: Dictionary with the memory size of one datapoint for each dataset key.
+            dtypes: Dictionary with the dtype of data for each dataset key.
+            shm_lookup: If shared memory lookup dict already exists, return it here.
+        """
         # load first episode to determine memory usage
-        seq = self.zip_sequence(ep_start_end_ids[0][0], ep_start_end_ids[0][0] + 1)
+        seq = self._zip_sequence(ep_start_end_ids[0][0], ep_start_end_ids[0][0] + 1)
         total_size = np.sum(ep_start_end_ids[:, 1] - ep_start_end_ids[:, 0])
-        shmem = {}
-        shapes = {}
-        sizes = {}
-        dtypes = {}
+        shmem: Dict[str, SharedMemory] = {}
+        shapes: Dict[str, Tuple] = {}
+        sizes: Dict[str, int] = {}
+        dtypes: Dict[str, str] = {}
 
         shm_lookup = check_shm_lookup_exists(self.dataset_type)
         # check if all necessary shared memories are already loaded
@@ -154,7 +238,7 @@ class SharedMemoryLoader:
                         for key, size in shm_lookup["sizes"].items()
                     ]
                 ):
-                    return None, None, None, None, shm_lookup
+                    return shmem, shapes, sizes, dtypes, shm_lookup
             except FileNotFoundError as e:
                 pass
         for key, array in seq.items():
@@ -179,46 +263,53 @@ class SharedMemoryLoader:
 
         return shmem, shapes, sizes, dtypes, None
 
-    def zip_sequence(self, start_idx, end_idx, pbar=None):
+    def _zip_sequence(self, start_idx, end_idx, pbar=None):
+        """
+        Load consecutive frames saved as individual files on disk and combine to episode dict.
+
+        Args:
+            start_idx: Start index of file.
+            end_idx: End index of file.
+            pbar: Tqdm progress bar.
+
+        Returns:
+            Episode dict.
+        """
         keys = list(chain(*self.obs_space.values()))
         keys.remove("language")
         keys.append("scene_obs")
         n_items = end_idx - start_idx
         episode = {}
-        data = np.load(self.get_episode_name(start_idx))
+        data = np.load(self._get_episode_name(start_idx))
         for key in keys:
             shape = (n_items,) + data[key].shape
             dtype = data[key].dtype
             episode[key] = np.empty(shape=shape, dtype=dtype)
         for i, file_idx in enumerate(range(start_idx, end_idx)):
-            with np.load(self.get_episode_name(file_idx)) as data:
+            with np.load(self._get_episode_name(file_idx)) as data:
                 for key in keys:
                     episode[key][i] = data[key]
             if pbar is not None:
                 pbar.update(1)
         return episode
 
-    def get_episode_name(self, idx):
+    def _get_episode_name(self, file_idx):
         """
-        Convert frame idx to file name
-        """
-        return Path(f"{self.naming_pattern[0]}{idx:0{self.n_digits}d}{self.naming_pattern[1]}")
+        Convert file idx to file path.
 
-    def lookup_naming_pattern(self, n_digits=None):
-        it = os.scandir(self.dataset_dir)
-        while True:
-            filename = Path(next(it))
-            if self.save_format in filename.suffix:
-                break
-        aux_naming_pattern = re.split(r"\d+", filename.stem)
-        naming_pattern = [filename.parent / aux_naming_pattern[0], filename.suffix]
-        n_digits = n_digits if n_digits is not None else len(re.findall(r"\d+", filename.stem)[0])
-        assert len(naming_pattern) == 2
-        assert n_digits > 0
-        return naming_pattern, n_digits
+        Args:
+            file_idx: index of starting frame.
+
+        Returns:
+            Path to file.
+        """
+        return Path(f"{self.naming_pattern[0]}{file_idx:0{self.n_digits}d}{self.naming_pattern[1]}")
 
 
 def delete_shm(shm_keys, signal, frame):
+    """
+    Close and unlink the shared memories.
+    """
     for dataset_type in ["train", "val"]:
         for shm_key in shm_keys:
             try:
@@ -232,6 +323,10 @@ def delete_shm(shm_keys, signal, frame):
 
 
 class SignalCallback(Callback):
+    """
+    Register a signal handler for closing and unlinking the shared memory that get's activated with a SIGTERM signal.
+    """
+
     def on_fit_start(self, trainer: Trainer, pl_module: LightningModule) -> None:
         if isinstance(trainer.datamodule.train_dataloader()["vis"].dataset, ShmDataset):  # type: ignore
             shm_keys = trainer.datamodule.train_dataloader()["vis"].dataset.episode_lookup_dict.keys()  # type: ignore

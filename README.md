@@ -59,27 +59,19 @@ We leverage [Pytorch Lightning's](https://www.pytorchlightning.ai/) DDP implemen
 Evaluating the models requires a single NVIDIA GPU with **8GB**. As each GPU receives a batch of 64 sequences (32 language + 32 vision), the effective batch size is 512 for all our experiments.
 
 Trained with:
-- **GPU** - 8x NVIDIA 2080Ti
+- **GPU** - 8x NVIDIA RTX 2080Ti
 - **CPU** - AMD EPYC 7502
-- **RAM** - 256GB
+- **RAM** - 512GB
 - **OS** - Ubuntu 20.04
 
 ## Training
-To train our HULC model on 8 GPUs:
+To train our HULC model with the maximum amount of available GPUS, run:
 ```bash
-python hulc/training.py trainer.gpus=8 \
-                        datamodule.root_data_dir=path/to/dataset \
-                        datamodule.datasets.vision_dataset.lang_folder=lang_paraphrase-MiniLM-L3-v2 \
-                        datamodule.datasets.lang_dataset.lang_folder=lang_paraphrase-MiniLM-L3-v2 \
-                        datamodule/observation_space=lang_rgb_static_gripper_rel_act \
-                        model/perceptual_encoder=gripper_cam \
-                        datamodule/transforms=rand_shift \
-                        model/clip_proj=default \
-                        model.img_lang_matching_clip=true \
-                        datamodule/datasets=vision_lang_shm \
-                        ~callbacks/shm_signal
+python hulc/training.py trainer.gpus=-1 datamodule.root_data_dir=path/to/dataset \
+                        datamodule/datasets=vision_lang_shm
 ```
-The `vision_lang_shm` option loads the CALVIN dataset using shared memory cache, speeding up the training.
+The `vision_lang_shm` option loads the CALVIN dataset into shared memory at the beginning of the training,
+speeding up the data loading during training.
 If you want to use the original data loader just override the command with `datamodule/datasets=vision_lang`.
 If you have access to a Slurm cluster, follow this [guide](https://github.com/mees/hulc/blob/main/slurm_scripts/README.md).
 

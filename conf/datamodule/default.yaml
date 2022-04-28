@@ -2,10 +2,10 @@ defaults:
   - datasets: vision_lang_shm
   - transforms: rand_shift
   - proprioception_dims: robot_no_joints #robot_full
-  - observation_space: lang_rgb_static_rel_act
-_target_: hulc.datasets.play_data_module.PlayDataModule
+  - observation_space: lang_rgb_static_gripper_rel_act
+_target_: hulc.datasets.hulc_data_module.HulcDataModule
 _recursive_: false
-root_data_dir: "play_data"
+root_data_dir: ???
 action_space: 7
 action_max: [1., 1., 1., 1., 1., 1., 1.,]
 action_min: [-1., -1., -1., -1., -1., -1., -1]

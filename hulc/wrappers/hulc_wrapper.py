@@ -2,13 +2,13 @@ import logging
 import os
 from typing import Any, Dict, Tuple, Union
 
-from hulc.datasets.utils.episode_utils import process_depth, process_rgb, process_state
 import gym
 import numpy as np
 import torch
 
 from calvin_env.envs.play_table_env import get_env
 from calvin_env.utils.utils import EglDeviceNotFoundError, get_egl_device_id
+from hulc.datasets.utils.episode_utils import process_depth, process_rgb, process_state
 
 logger = logging.getLogger(__name__)
 
@@ -53,13 +53,17 @@ class HulcWrapper(gym.Wrapper):
         rgb_obs.update({"rgb_obs": {k: v.to(self.device).unsqueeze(0) for k, v in rgb_obs["rgb_obs"].items()}})
         depth_obs.update({"depth_obs": {k: v.to(self.device).unsqueeze(0) for k, v in depth_obs["depth_obs"].items()}})
 
-        obs_dict = {**rgb_obs, **state_obs, **depth_obs}
-        obs_dict["robot_obs_raw"] = torch.from_numpy(obs["robot_obs"]).to(self.device)
+        obs_dict: Dict = {
+            **rgb_obs,
+            **state_obs,
+            **depth_obs,
+            "robot_obs_raw": torch.from_numpy(obs["robot_obs"]).to(self.device),
+        }
         return obs_dict
 
     def step(
         self, action_tensor: torch.Tensor
-    ) -> Tuple[Dict[str, Union[torch.Tensor, Tuple[torch.Tensor, ...]]], int, bool, Dict]:
+    ) -> Tuple[Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]], int, bool, Dict]:
         if self.relative_actions:
             action = action_tensor.squeeze().cpu().detach().numpy()
             assert len(action) == 7
@@ -85,7 +89,7 @@ class HulcWrapper(gym.Wrapper):
         seq_idx: int = 0,
         scene_obs: Any = None,
         robot_obs: Any = None,
-    ) -> Dict[str, Union[torch.Tensor, Tuple[torch.Tensor, ...]]]:
+    ) -> Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]]:
         if reset_info is not None:
             obs = self.env.reset(
                 robot_obs=reset_info["robot_obs"][batch_idx, seq_idx],

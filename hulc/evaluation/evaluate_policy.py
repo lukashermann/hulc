@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 import time
 
+# This is for using the locally installed repo clone when using slurm
 sys.path.insert(0, Path(__file__).absolute().parents[2].as_posix())
 import hydra
 import numpy as np
