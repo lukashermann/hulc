@@ -2,7 +2,7 @@ import logging
 import os
 from pathlib import Path
 import re
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 
 import numpy as np
 from omegaconf import DictConfig, ListConfig, OmegaConf

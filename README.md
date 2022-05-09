@@ -66,14 +66,31 @@ Trained with:
 
 ## Training
 To train our HULC model with the maximum amount of available GPUS, run:
-```bash
-python hulc/training.py trainer.gpus=-1 datamodule.root_data_dir=path/to/dataset \
-                        datamodule/datasets=vision_lang_shm
+```
+python hulc/training.py trainer.gpus=-1 datamodule.root_data_dir=path/to/dataset datamodule/datasets=vision_lang_shm
 ```
 The `vision_lang_shm` option loads the CALVIN dataset into shared memory at the beginning of the training,
 speeding up the data loading during training.
-If you want to use the original data loader just override the command with `datamodule/datasets=vision_lang`.
-If you have access to a Slurm cluster, follow this [guide](https://github.com/mees/hulc/blob/main/slurm_scripts/README.md).
+The preparation of the shared memory cache will take some time
+(approx. 20 min at our SLURM cluster). \
+If you want to use the original data loader (e.g. for debugging) just override the command with `datamodule/datasets=vision_lang`. \
+For an additional speed up, you can disable the evaluation callbacks during training by adding `~callbacks/rollout` and `~callbacks/rollout_lh`
+
+If you have access to a SLURM cluster, follow this [guide](https://github.com/mees/hulc/blob/main/slurm_scripts/README.md).
+
+### Ablations
+Multi-context imitation learning (MCIL), (Lynch et al., 2019):
+```
+python hulc/training.py trainer.gpus=-1 datamodule.root_data_dir=path/to/dataset datamodule/datasets=vision_lang_shm model=mcil
+datamodule=mcil
+```
+
+Goal-conditioned behavior cloning (GCBC), (Lynch et al., 2019):
+```
+python hulc/training.py trainer.gpus=-1 datamodule.root_data_dir=path/to/dataset datamodule/datasets=vision_lang_shm model=gcbc
+~callbacks/tsne_plot
+```
+
 
 ## Evaluation
 See detailed inference instructions on the [CALVIN repo](https://github.com/mees/calvin#muscle-evaluation-the-calvin-challenge).

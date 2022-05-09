@@ -24,7 +24,7 @@ def log_sum_exp(x):
     return m + torch.log(torch.sum(torch.exp(x - m2), dim=axis))
 
 
-class ActionDecoderGripperCamRNN(ActionDecoder):
+class LogisticDecoderRNN(ActionDecoder):
     def __init__(
         self,
         perceptual_features: int,
@@ -40,21 +40,24 @@ class ActionDecoderGripperCamRNN(ActionDecoder):
         load_action_bounds: bool,
         num_classes: int,
         gripper_alpha: float,
-        perceptual_emb_slice: tuple,
         policy_rnn_dropout_p: float,
         num_layers: int,
         rnn_model: str,
         gripper_control: bool,
         discrete_gripper: bool,
+        perceptual_emb_slice: Optional[tuple] = None,
     ):
-        super(ActionDecoderGripperCamRNN, self).__init__()
+        super(LogisticDecoderRNN, self).__init__()
         self.n_dist = n_mixtures
         self.gripper_control = gripper_control
         self.discrete_gripper = discrete_gripper
         self.log_scale_min = log_scale_min
         self.num_classes = num_classes
         self.plan_features = plan_features
-        in_features = (perceptual_emb_slice[1] - perceptual_emb_slice[0]) + latent_goal_features + plan_features
+        if perceptual_emb_slice is not None:
+            in_features = (perceptual_emb_slice[1] - perceptual_emb_slice[0]) + latent_goal_features + plan_features
+        else:
+            in_features = perceptual_features + latent_goal_features + plan_features
         self.out_features = out_features - 1 if discrete_gripper else out_features  # for discrete gripper act
         self.gripper_alpha = gripper_alpha
         self.rnn = eval(rnn_model)
@@ -261,8 +264,8 @@ class ActionDecoderGripperCamRNN(ActionDecoder):
         latent_goal: torch.Tensor,
         h_0: Optional[torch.Tensor] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-
-        perceptual_emb = perceptual_emb[..., slice(*self.perceptual_emb_slice)]
+        if self.perceptual_emb_slice is not None:
+            perceptual_emb = perceptual_emb[..., slice(*self.perceptual_emb_slice)]
         batch_size, seq_len = perceptual_emb.shape[0], perceptual_emb.shape[1]
         latent_plan = latent_plan.unsqueeze(1).expand(-1, seq_len, -1)
         latent_goal = latent_goal.unsqueeze(1).expand(-1, seq_len, -1)

@@ -1,14 +1,12 @@
 from itertools import chain
 import logging
-import os
 from pathlib import Path
 import pickle
-import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 
-from hulc.datasets.base_dataset import BaseDataset, get_validation_window_size
+from hulc.datasets.base_dataset import BaseDataset
 from hulc.datasets.utils.episode_utils import lookup_naming_pattern
 
 logger = logging.getLogger(__name__)

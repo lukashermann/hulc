@@ -17,13 +17,14 @@ class PlanRecognitionBiRNNNetwork(nn.Module):
         action_space: int,
         birnn_dropout_p: float,
         dist: Distribution,
+        rnn_type: str,
     ):
         super(PlanRecognitionBiRNNNetwork, self).__init__()
         self.plan_features = plan_features
         self.action_space = action_space
         self.in_features = in_features
         self.dist = dist
-        self.birnn_model = nn.GRU(
+        self.birnn_model = eval(rnn_type)(
             input_size=self.in_features,
             hidden_size=2048,
             num_layers=2,

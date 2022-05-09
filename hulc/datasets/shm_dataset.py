@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 
 import numpy as np
 
-from hulc.datasets.base_dataset import BaseDataset, get_validation_window_size
+from hulc.datasets.base_dataset import BaseDataset
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ class ShmDataset(BaseDataset):
         for key, lookup in self.episode_lookup_dict.items():
             offset, j = lookup[idx]
             shape = (window_size + j,) + self.shapes[key]
-            array = np.ndarray(shape, dtype=self.dtypes[key], buffer=self.shared_memories[key].buf, offset=offset)[j:]
+            array = np.ndarray(shape, dtype=self.dtypes[key], buffer=self.shared_memories[key].buf, offset=offset)[j:]  # type: ignore
             episode[key] = array
         if self.with_lang:
             episode["language"] = self.lang_ann[self.lang_lookup[idx]][0]  # TODO check  [0]

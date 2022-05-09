@@ -1,17 +1,17 @@
 defaults:
   - perceptual_encoder: gripper_cam
   - plan_proposal: default
-  - plan_recognition: transformers
-  - distribution:  discrete
+  - plan_recognition: birnn
+  - distribution:  continuous
   - visual_goal: default
   - language_encoder: none
   - language_goal: default
-  - action_decoder: hulc_default
+  - action_decoder: mcil_default
   - optimizer: adam
   - lr_scheduler: constant
   - lang_decoder: none
   - lang_discriminator: none
-  - clip_proj: default
+  - clip_proj: none
   - /annotations@val_instructions: new_playtable_validation
 
 _target_: hulc.models.hulc.Hulc
@@ -26,5 +26,5 @@ lang_recon_beta: ${loss.lang_recon_beta}
 lang_contrastive: false
 lang_contrastive_beta: ${loss.lang_contrastive_beta}
 replan_freq: 30
-img_lang_matching_clip: true
+img_lang_matching_clip: false
 lang_clip_beta: ${loss.lang_clip_beta}

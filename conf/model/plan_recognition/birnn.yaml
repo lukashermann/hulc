@@ -3,3 +3,4 @@ in_features: ???
 plan_features: 256
 action_space: ${datamodule.action_space}
 birnn_dropout_p: 0.0
+rnn_type: nn.RNN  # nn.GRU

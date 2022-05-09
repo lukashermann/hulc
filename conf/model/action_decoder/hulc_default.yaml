@@ -1,4 +1,4 @@
-_target_: hulc.models.decoders.action_decoder_gripper_cam_rnn.ActionDecoderGripperCamRNN
+_target_: hulc.models.decoders.logistic_decoder_rnn.LogisticDecoderRNN
 n_mixtures: 10
 hidden_size: 2048
 out_features: ${datamodule.action_space}

@@ -7,7 +7,7 @@ from multiprocessing.shared_memory import SharedMemory
 import os
 from pathlib import Path
 import signal
-from typing import DefaultDict, Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 import numpy as np
 from omegaconf import DictConfig
@@ -67,8 +67,8 @@ def save_shm_lookup(train_shm_lookup: Dict, val_shm_lookup: Dict) -> None:
         val_shm_lookup: Shared memory lookup for validation data.
     """
     save_path = Path("/tmp/") if "TMPDIR" not in os.environ else Path(os.environ["TMPDIR"])
-    np.save(save_path / "train_shm_lookup.npy", train_shm_lookup)
-    np.save(save_path / "val_shm_lookup.npy", val_shm_lookup)
+    np.save(save_path / "train_shm_lookup.npy", train_shm_lookup)  # type: ignore
+    np.save(save_path / "val_shm_lookup.npy", val_shm_lookup)  # type: ignore
 
 
 def load_shm_lookup() -> Tuple[Dict, Dict]:
