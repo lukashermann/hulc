@@ -53,6 +53,7 @@ We provide our final models for all three CALVIN splits.
 cd $HULC_ROOT/checkpoints
 sh download_model_weights.sh D | ABC | ABCD
 ```
+For instructions how to use the pretrained models, look at the training and evaluation sections.
 
 ## Hardware Requirements
 
@@ -79,6 +80,12 @@ For an additional speed up, you can disable the evaluation callbacks during trai
 
 If you have access to a SLURM cluster, follow this [guide](https://github.com/mees/hulc/blob/main/slurm_scripts/README.md).
 
+You can use our [pre-trained models](#pre-trained-models) to initialize a training by running
+```
+python hulc/training.py trainer.gpus=-1 datamodule.root_data_dir=path/to/dataset hydra.run.dir=$HULC_ROOT/checkpoints/HULC_D_D
+```
+Note that this will log the training into the checkpoint folder.
+
 ### Ablations
 Multi-context imitation learning (MCIL), (Lynch et al., 2019):
 ```
@@ -98,6 +105,8 @@ See detailed inference instructions on the [CALVIN repo](https://github.com/mees
 ```
 python hulc/evaluation/evaluate_policy.py --dataset_path <PATH/TO/DATASET> --train_folder <PATH/TO/TRAINING/FOLDER>
 ```
+Set `--train_folder $HULC_ROOT/checkpoints/HULC_D_D` to evaluate our [pre-trained models](#pre-trained-models).
+
 Optional arguments:
 
 - `--checkpoint <PATH/TO/CHECKPOINT>`: by default, the evaluation loads the last checkpoint in the training log directory.
