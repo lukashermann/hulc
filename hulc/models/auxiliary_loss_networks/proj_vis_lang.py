@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 
-class ClipProj(nn.Module):
+class ProjVisLang(nn.Module):
     def __init__(self, im_dim: int, lang_dim: int, output_dim: int, proj_lang: bool = True):
         super().__init__()
         self.mlp_im = nn.Sequential(

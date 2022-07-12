@@ -1,4 +1,4 @@
-_target_: hulc.models.decoders.clip_proj.ClipProj
+_target_: hulc.models.auxiliary_loss_networks.proj_vis_lang.ProjVisLang
 im_dim: ${model.plan_recognition.fc_hidden_size}
 lang_dim: ${model.language_goal.latent_goal_features}
 output_dim: ${model.language_goal.latent_goal_features}

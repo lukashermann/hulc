@@ -1,7 +1,7 @@
 defaults:
   - callbacks: default
   - datamodule: default
-  - model: default
+  - model: hulc
   - loss: default
   - training: default_training
   - trainer: play_trainer

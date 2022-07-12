@@ -31,7 +31,6 @@ class Hulc(pl.LightningModule):
         perceptual_encoder: DictConfig for perceptual_encoder.
         plan_proposal: DictConfig for plan_proposal network.
         plan_recognition: DictConfig for plan_recognition network.
-        language_encoder: DictConfig for language_encoder.
         language_goal: DictConfig for language_goal encoder.
         visual_goal: DictConfig for visual_goal encoder.
         action_decoder: DictConfig for action_decoder.
@@ -39,20 +38,20 @@ class Hulc(pl.LightningModule):
         kl_balancing_mix: Weight for KL balancing (as in https://arxiv.org/pdf/2010.02193.pdf).
         state_recons: If True, use state reconstruction auxiliary loss.
         state_recon_beta: Weight for state reconstruction loss term.
-        lang_recons: If True, use BC-Z language regression auxiliary loss.
-        lang_recon_beta: Weight for language reconstruction loss term.
-        lang_contrastive: If True, use MIA cross-modality matching auxiliary loss.
-        lang_contrastive_beta: Weight for cross-modality matching loss term.
+        use_bc_z_auxiliary_loss: If True, use BC-Z language regression auxiliary loss.
+        bc_z_auxiliary_loss_beta: Weight for language reconstruction loss term.
+        use_mia_auxiliary_loss: If True, use MIA cross-modality matching auxiliary loss.
+        mia_auxiliary_loss_beta: Weight for cross-modality matching loss term.
         optimizer: DictConfig for optimizer.
         lr_scheduler: DictConfig for learning rate scheduler.
         distribution: DictConfig for plan distribution (continuous or discrete).
         val_instructions: DictConfig with validation language instructions for each task.
-        img_lang_matching_clip: If True, use CLIP contrastive auxiliary loss.
-        lang_clip_beta: Weight for CLIP contrastive loss.
+        use_clip_auxiliary_loss: If True, use CLIP contrastive auxiliary loss.
+        clip_auxiliary_loss_beta: Weight for CLIP contrastive loss.
         replan_freq: After how many steps generate new plan (only for inference).
-        lang_decoder: DictConfig for language regression network for BC-Z language regression loss.
-        lang_discriminator: DictConfig for discriminator network for MIA cross-modality matching loss.
-        clip_proj: DictConfig for projection network for CLIP contrastive loss.
+        bc_z_lang_decoder: DictConfig for language regression network for BC-Z language regression loss.
+        mia_lang_discriminator: DictConfig for discriminator network for MIA cross-modality matching loss.
+        proj_vis_lang: DictConfig for projection network for CLIP contrastive loss.
     """
 
     def __init__(
@@ -60,7 +59,6 @@ class Hulc(pl.LightningModule):
         perceptual_encoder: DictConfig,
         plan_proposal: DictConfig,
         plan_recognition: DictConfig,
-        language_encoder: DictConfig,
         language_goal: DictConfig,
         visual_goal: DictConfig,
         action_decoder: DictConfig,
@@ -68,20 +66,20 @@ class Hulc(pl.LightningModule):
         kl_balancing_mix: float,
         state_recons: bool,
         state_recon_beta: float,
-        lang_recons: bool,
-        lang_recon_beta: float,
-        lang_contrastive: bool,
-        lang_contrastive_beta: float,
+        use_bc_z_auxiliary_loss: bool,
+        bc_z_auxiliary_loss_beta: float,
+        use_mia_auxiliary_loss: bool,
+        mia_auxiliary_loss_beta: float,
         optimizer: DictConfig,
         lr_scheduler: DictConfig,
         distribution: DictConfig,
         val_instructions: DictConfig,
-        img_lang_matching_clip: bool,
-        lang_clip_beta: float,
+        use_clip_auxiliary_loss: bool,
+        clip_auxiliary_loss_beta: float,
         replan_freq: int = 30,
-        lang_decoder: Optional[DictConfig] = None,
-        lang_discriminator: Optional[DictConfig] = None,
-        clip_proj: Optional[DictConfig] = None,
+        bc_z_lang_decoder: Optional[DictConfig] = None,
+        mia_lang_discriminator: Optional[DictConfig] = None,
+        proj_vis_lang: Optional[DictConfig] = None,
     ):
         super(Hulc, self).__init__()
         self.perceptual_encoder = hydra.utils.instantiate(perceptual_encoder, device=self.device)
@@ -93,39 +91,44 @@ class Hulc(pl.LightningModule):
             action_decoder,
             distribution,
         )
+        # plan networks
         self.dist = hydra.utils.instantiate(distribution)
         self.plan_proposal = hydra.utils.instantiate(plan_proposal, dist=self.dist)
         self.plan_recognition = hydra.utils.instantiate(plan_recognition, dist=self.dist)
-        self.visual_goal = hydra.utils.instantiate(visual_goal)
-        self.lang_encoder = hydra.utils.instantiate(language_encoder) if language_encoder else None
-        self.language_goal = hydra.utils.instantiate(language_goal) if language_goal else None
-        self.action_decoder: ActionDecoder = hydra.utils.instantiate(action_decoder)
-        self.img_lang_matching_clip = img_lang_matching_clip
-        self.lang_clip_beta = lang_clip_beta
-        if img_lang_matching_clip:
-            self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
-            self.proj_vis_lang = hydra.utils.instantiate(clip_proj)
-        self.lang_decoder = None
-        self.lang_discriminator = None
-        if lang_decoder:
-            self.lang_decoder = hydra.utils.instantiate(lang_decoder)
-        if lang_discriminator:
-            self.lang_discriminator = hydra.utils.instantiate(lang_discriminator)
-            self.proj_vis_lang = hydra.utils.instantiate(clip_proj)
 
-        self.kl_beta = kl_beta
-        self.kl_balacing_mix = kl_balancing_mix
+        # goal encoders
+        self.visual_goal = hydra.utils.instantiate(visual_goal)
+        self.language_goal = hydra.utils.instantiate(language_goal) if language_goal else None
+
+        # policy network
+        self.action_decoder: ActionDecoder = hydra.utils.instantiate(action_decoder)
+
+        # auxiliary losses
+        self.use_clip_auxiliary_loss = use_clip_auxiliary_loss
+        self.clip_auxiliary_loss_beta = clip_auxiliary_loss_beta
+        self.use_bc_z_auxiliary_loss = use_bc_z_auxiliary_loss
+        self.bc_z_auxiliary_loss_beta = bc_z_auxiliary_loss_beta
+        self.use_mia_auxiliary_loss = use_mia_auxiliary_loss
+        self.mia_auxiliary_loss_beta = mia_auxiliary_loss_beta
+        if use_clip_auxiliary_loss:
+            self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
+            self.proj_vis_lang = hydra.utils.instantiate(proj_vis_lang)
+        if bc_z_lang_decoder:
+            self.bc_z_lang_decoder = hydra.utils.instantiate(bc_z_lang_decoder)
+        if mia_lang_discriminator:
+            self.mia_lang_discriminator = hydra.utils.instantiate(mia_lang_discriminator)
+            self.proj_vis_lang = hydra.utils.instantiate(proj_vis_lang)
         self.state_recons = state_recons
         self.st_recon_beta = state_recon_beta
-        self.lang_recons = lang_recons
-        self.lang_recon_beta = lang_recon_beta
-        self.lang_contrastive = lang_contrastive
-        self.lang_contrastive_beta = lang_contrastive_beta
+
+        self.kl_beta = kl_beta
+        self.kl_balancing_mix = kl_balancing_mix
+
         self.modality_scope = "vis"
         self.optimizer_config = optimizer
         self.lr_scheduler = lr_scheduler
         # action_decoder.out_features = action_decoder.out_features
-        # self.perceptual_encoder.lang_decoder.perceptual_features = self.perceptual_encoder.lang_decoder.perceptual_features
+        # self.perceptual_encoder.bc_z_lang_decoder.perceptual_features = self.perceptual_encoder.bc_z_lang_decoder.perceptual_features
         self.save_hyperparameters()
 
         # for inference
@@ -134,8 +137,8 @@ class Hulc(pl.LightningModule):
         self.latent_goal = None
         self.plan = None
 
-        # for clip loss
-        if self.img_lang_matching_clip:
+        # for clip loss ground truth plot
+        if self.use_clip_auxiliary_loss:
             self.encoded_lang_train: Optional[torch.Tensor] = None
             self.encoded_lang_val: Optional[torch.Tensor] = None
             self.train_lang_emb: Optional[torch.Tensor] = None
@@ -443,14 +446,16 @@ class Hulc(pl.LightningModule):
                     batch_size["aux_lang"] = 1
                 else:
                     batch_size["aux_lang"] = torch.sum(dataset_batch["use_for_aux_lang_loss"]).detach()  # type:ignore
-                    if self.lang_recons:
-                        lang_pred_loss += self.lang_regression_loss(
+                    if self.use_bc_z_auxiliary_loss:
+                        lang_pred_loss += self.bc_z_auxiliary_loss(
                             seq_feat, dataset_batch["lang"], dataset_batch["use_for_aux_lang_loss"]
                         )
-                    if self.img_lang_matching_clip:
-                        lang_clip_loss += self.clip_loss(seq_feat, latent_goal, dataset_batch["use_for_aux_lang_loss"])
-                    if self.lang_contrastive:
-                        lang_contrastive_loss += self.contrastive_lang_loss(
+                    if self.use_clip_auxiliary_loss:
+                        lang_clip_loss += self.clip_auxiliary_loss(
+                            seq_feat, latent_goal, dataset_batch["use_for_aux_lang_loss"]
+                        )
+                    if self.use_mia_auxiliary_loss:
+                        lang_contrastive_loss += self.mia_auxiliary_loss(
                             seq_feat, latent_goal, dataset_batch["use_for_aux_lang_loss"]
                         )
             encoders_dict[self.modality_scope] = [pp_dist, pr_dist]
@@ -493,31 +498,31 @@ class Hulc(pl.LightningModule):
                 on_epoch=True,
                 batch_size=total_bs,
             )
-        if self.lang_recons:
-            total_loss = total_loss + self.lang_recon_beta * lang_pred_loss
+        if self.use_bc_z_auxiliary_loss:
+            total_loss = total_loss + self.bc_z_auxiliary_loss_beta * lang_pred_loss
             self.log(
                 "train/pred_lang",
-                self.lang_recon_beta * lang_pred_loss,
+                self.bc_z_auxiliary_loss_beta * lang_pred_loss,
                 on_step=False,
                 on_epoch=True,
                 batch_size=batch_size["aux_lang"],
                 sync_dist=True,
             )
-        if self.lang_contrastive:
-            total_loss = total_loss + self.lang_contrastive_beta * lang_contrastive_loss
+        if self.use_mia_auxiliary_loss:
+            total_loss = total_loss + self.mia_auxiliary_loss_beta * lang_contrastive_loss
             self.log(
                 "train/lang_contrastive",
-                self.lang_contrastive_beta * lang_contrastive_loss,
+                self.mia_auxiliary_loss_beta * lang_contrastive_loss,
                 on_step=False,
                 on_epoch=True,
                 batch_size=batch_size["aux_lang"],
                 sync_dist=True,
             )
-        if self.img_lang_matching_clip:
-            total_loss = total_loss + self.lang_clip_beta * lang_clip_loss
+        if self.use_clip_auxiliary_loss:
+            total_loss = total_loss + self.clip_auxiliary_loss_beta * lang_clip_loss
             self.log(
                 "train/lang_clip_loss",
-                self.lang_clip_beta * lang_clip_loss,
+                self.clip_auxiliary_loss_beta * lang_clip_loss,
                 on_step=False,
                 on_epoch=True,
                 batch_size=batch_size["aux_lang"],
@@ -547,7 +552,7 @@ class Hulc(pl.LightningModule):
         kl_lhs = D.kl_divergence(self.dist.get_dist(self.dist.detach_state(pr_state)), pp_dist).mean()
         kl_rhs = D.kl_divergence(pr_dist, self.dist.get_dist(self.dist.detach_state(pp_state))).mean()
 
-        alpha = self.kl_balacing_mix
+        alpha = self.kl_balancing_mix
         kl_loss = alpha * kl_lhs + (1 - alpha) * kl_rhs
         kl_loss_scaled = kl_loss * self.kl_beta
         return kl_loss_scaled
@@ -556,7 +561,7 @@ class Hulc(pl.LightningModule):
         """Set kl_beta from Callback"""
         self.kl_beta = kl_beta
 
-    def lang_regression_loss(self, seq_vis_feat, gt_lang, use_for_aux_loss):
+    def bc_z_auxiliary_loss(self, seq_vis_feat, gt_lang, use_for_aux_loss):
         """
         BC-Z style language regression auxiliary loss, adapted from 'BC-Z: Zero-Shot Task Generalization with Robotic
         Imitation Learning' by Jang et al.
@@ -570,20 +575,20 @@ class Hulc(pl.LightningModule):
         Returns:
             Loss term of cosine distance between predicted language embedding and ground truth language embedding
         """
-        assert self.lang_decoder is not None
+        assert self.bc_z_lang_decoder is not None
         if use_for_aux_loss is not None:
             if not torch.any(use_for_aux_loss):
                 return torch.tensor(0.0).to(self.device)
             seq_vis_feat = seq_vis_feat[use_for_aux_loss]
             gt_lang = gt_lang[use_for_aux_loss]
-        lang_pred = self.lang_decoder(seq_vis_feat)
+        lang_pred = self.bc_z_lang_decoder(seq_vis_feat)
         cos_sim = ((lang_pred * gt_lang).sum(-1)) / (
             torch.linalg.norm(lang_pred, dim=1) * torch.linalg.norm(gt_lang, dim=1)
         )
         cos_dist = 1 - cos_sim
         return cos_dist.mean()
 
-    def contrastive_lang_loss(self, seq_vis_feat, encoded_lang, use_for_aux_loss):
+    def mia_auxiliary_loss(self, seq_vis_feat, encoded_lang, use_for_aux_loss):
         """
         MIA style cross-modality matching auxiliary loss, adapted from 'Creating Multimodal Interactive Agents with
         Imitation and Self-Supervised Learning' by Deepmind Interactive Team.
@@ -599,7 +604,7 @@ class Hulc(pl.LightningModule):
         Returns:
             Binary cross entropy loss.
         """
-        assert self.lang_discriminator is not None
+        assert self.mia_lang_discriminator is not None
         if use_for_aux_loss is not None:
             if not torch.any(use_for_aux_loss):
                 return torch.tensor(0.0).to(self.device)
@@ -608,17 +613,17 @@ class Hulc(pl.LightningModule):
         image_features, lang_features = self.proj_vis_lang(seq_vis_feat, encoded_lang)
         # l2 normalize embeddings?
 
-        pred_pos = self.lang_discriminator(image_features, lang_features)
+        pred_pos = self.mia_lang_discriminator(image_features, lang_features)
         labels_pos = torch.ones(pred_pos.shape, dtype=torch.float32, device=encoded_lang.device)
         labels_neg = torch.zeros(pred_pos.shape, dtype=torch.float32, device=encoded_lang.device)
         shifted_lang = torch.roll(lang_features, shifts=1, dims=0)
-        pred_neg = self.lang_discriminator(image_features, shifted_lang)
+        pred_neg = self.mia_lang_discriminator(image_features, shifted_lang)
         labels = torch.cat([labels_pos, labels_neg], 0)
         pred = torch.cat([pred_pos, pred_neg], 0)
         bce_loss = binary_cross_entropy_with_logits(pred, labels)
         return bce_loss
 
-    def clip_loss(self, seq_vis_feat, encoded_lang, use_for_aux_loss):
+    def clip_auxiliary_loss(self, seq_vis_feat, encoded_lang, use_for_aux_loss):
         """
         CLIP style contrastive loss, adapted from 'Learning transferable visual models from natural language
         supervision' by Radford et al.
@@ -634,7 +639,7 @@ class Hulc(pl.LightningModule):
         Returns:
             Contrastive loss.
         """
-        assert self.img_lang_matching_clip is not None
+        assert self.use_clip_auxiliary_loss is not None
         if use_for_aux_loss is not None:
             if not torch.any(use_for_aux_loss):
                 return torch.tensor(0.0).to(self.device)
@@ -661,7 +666,7 @@ class Hulc(pl.LightningModule):
         Preprocessing for clip loss metrics, only called once at the beginning of the training.
         Note that these metrics are not actually used for training.
         """
-        if self.img_lang_matching_clip:
+        if self.use_clip_auxiliary_loss:
             train_dataset = self.trainer.datamodule.train_datasets["lang"]  # type: ignore
             val_dataset = self.trainer.datamodule.val_datasets["lang"]  # type: ignore
             self.val_dataset = val_dataset
@@ -757,17 +762,19 @@ class Hulc(pl.LightningModule):
                 perceptual_emb, latent_goal, dataset_batch["actions"], dataset_batch["state_info"]["robot_obs"]
             )
             if "lang" in self.modality_scope:
-                if self.lang_recons:
-                    val_pred_lang_loss = self.lang_regression_loss(
+                if self.use_bc_z_auxiliary_loss:
+                    val_pred_lang_loss = self.bc_z_auxiliary_loss(
                         seq_feat, dataset_batch["lang"], dataset_batch["use_for_aux_lang_loss"]
                     )
                     self.log("val/lang_pred_loss", val_pred_lang_loss, sync_dist=True)
-                if self.img_lang_matching_clip:
-                    val_pred_clip_loss = self.clip_loss(seq_feat, latent_goal, dataset_batch["use_for_aux_lang_loss"])
+                if self.use_clip_auxiliary_loss:
+                    val_pred_clip_loss = self.clip_auxiliary_loss(
+                        seq_feat, latent_goal, dataset_batch["use_for_aux_lang_loss"]
+                    )
                     self.log("val/val_pred_clip_loss", val_pred_clip_loss, sync_dist=True)
                     self.clip_groundtruth(seq_feat, dataset_batch["idx"], dataset_batch["use_for_aux_lang_loss"])
-                if self.lang_contrastive:
-                    val_pred_contrastive_loss = self.contrastive_lang_loss(
+                if self.use_mia_auxiliary_loss:
+                    val_pred_contrastive_loss = self.mia_auxiliary_loss(
                         seq_feat, latent_goal, dataset_batch["use_for_aux_lang_loss"]
                     )
                     self.log("val/lang_contrastive_loss", val_pred_contrastive_loss, sync_dist=True)
@@ -914,7 +921,7 @@ class Hulc(pl.LightningModule):
 
     def on_validation_epoch_start(self) -> None:
         log_rank_0(f"Start validation epoch {self.current_epoch}")
-        if self.img_lang_matching_clip:
+        if self.use_clip_auxiliary_loss:
             if self.train_lang_emb.device != self.device:  # type: ignore
                 self.train_lang_emb = self.train_lang_emb.to(self.device)  # type: ignore
                 self.val_lang_emb = self.val_lang_emb.to(self.device)  # type: ignore

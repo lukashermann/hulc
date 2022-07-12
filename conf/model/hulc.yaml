@@ -4,14 +4,13 @@ defaults:
   - plan_recognition: transformers
   - distribution:  discrete
   - visual_goal: default
-  - language_encoder: none
   - language_goal: default
   - action_decoder: hulc_default
   - optimizer: adam
   - lr_scheduler: constant
-  - lang_decoder: none
-  - lang_discriminator: none
-  - clip_proj: default
+  - bc_z_lang_decoder: none
+  - mia_lang_discriminator: none
+  - proj_vis_lang: default
   - /annotations@val_instructions: new_playtable_validation
 
 _target_: hulc.models.hulc.Hulc
@@ -21,10 +20,10 @@ kl_beta: ${loss.kl_beta}
 kl_balancing_mix: ${loss.kl_balancing_mix}
 state_recons: false
 state_recon_beta: ${loss.state_recon_beta}
-lang_recons: false
-lang_recon_beta: ${loss.lang_recon_beta}
-lang_contrastive: false
-lang_contrastive_beta: ${loss.lang_contrastive_beta}
+use_bc_z_auxiliary_loss: false
+bc_z_auxiliary_loss_beta: ${loss.bc_z_auxiliary_loss_beta}
+use_mia_auxiliary_loss: false
+mia_auxiliary_loss_beta: ${loss.mia_auxiliary_loss_beta}
 replan_freq: 30
-img_lang_matching_clip: true
-lang_clip_beta: ${loss.lang_clip_beta}
+use_clip_auxiliary_loss: true
+clip_auxiliary_loss_beta: ${loss.clip_auxiliary_loss_beta}

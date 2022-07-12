@@ -20,7 +20,6 @@ def get_default_model_and_env(train_folder, dataset_path, checkpoint, env=None, 
     train_cfg_path = Path(train_folder) / ".hydra/config.yaml"
     train_cfg_path = format_sftp_path(train_cfg_path)
     cfg = OmegaConf.load(train_cfg_path)
-    cfg = OmegaConf.create(OmegaConf.to_yaml(cfg).replace("calvin_models.", ""))
     lang_folder = cfg.datamodule.datasets.lang_dataset.lang_folder
     if not hydra.core.global_hydra.GlobalHydra.instance().is_initialized():
         hydra.initialize("../../conf/datamodule/datasets")

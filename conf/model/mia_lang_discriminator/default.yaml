@@ -1,0 +1,4 @@
+_target_: hulc.models.auxiliary_loss_networks.mia_lang_discriminator.MIALangDiscriminator
+in_features: ${model.proj_vis_lang.output_dim}
+lang_dim: ${model.proj_vis_lang.output_dim}
+dropout_p: 0.0

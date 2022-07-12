@@ -1,6 +1,6 @@
 kl_beta: 0.01
 state_recon_beta: 0.5
 kl_balancing_mix: 0.8
-lang_recon_beta: 1.0
-lang_contrastive_beta: 1.0
-lang_clip_beta: 3.0
+bc_z_auxiliary_loss_beta: 1.0
+mia_auxiliary_loss_beta: 1.0
+clip_auxiliary_loss_beta: 3.0

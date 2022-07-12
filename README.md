@@ -36,8 +36,9 @@ If you encounter problems installing pyhash, you might have to downgrade setupto
 If you want to train on the [CALVIN](https://github.com/mees/calvin) dataset, choose a split with:
 ```bash
 cd $HULC_ROOT/dataset
-sh download_data.sh D | ABC | ABCD
+sh download_data.sh D | ABC | ABCD | debug
 ```
+If you want to get started without downloading the whole dataset, use the argument `debug` to download a small debug dataset (1.3 GB).
 ### Language Embeddings
 We provide the precomputed embeddings of the different Language Models we evaluate in the paper.
 The script assumes the corresponding split has been already downloaded.

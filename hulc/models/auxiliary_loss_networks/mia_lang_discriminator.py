@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-class LangDiscriminator(nn.Module):
+class MIALangDiscriminator(nn.Module):
     def __init__(self, in_features: int, lang_dim: int, dropout_p: float):
         super().__init__()
         self.mlp = nn.Sequential(

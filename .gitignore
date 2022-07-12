@@ -133,3 +133,8 @@ dmypy.json
 
 # log files
 runs
+
+checkpoints/HULC*
+
+dataset/calvin_debug_dataset/
+dataset/task*

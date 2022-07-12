@@ -42,8 +42,11 @@ def initialize_pretrained_weights(model, cfg):
 
 
 def get_git_commit_hash(repo_path: Path) -> str:
-    repo = git.Repo(search_parent_directories=True, path=repo_path.parent)
-    assert repo, "not a repo"
+    try:
+        repo = git.Repo(search_parent_directories=True, path=repo_path.parent)
+    except git.exc.InvalidGitRepositoryError:
+        return "Not a git repository. Are you using pycharm remote interpreter?"
+
     changed_files = [item.a_path for item in repo.index.diff(None)]
     if changed_files:
         print("WARNING uncommitted modified files: {}".format(",".join(changed_files)))
