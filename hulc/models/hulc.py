@@ -932,29 +932,6 @@ class Hulc(pl.LightningModule):
     def on_validation_epoch_end(self) -> None:
         logger.info(f"Finished validation epoch {self.current_epoch}")
 
-    def clip_inference(self, obs: dict, goal: dict) -> Tuple[torch.Tensor, torch.Tensor]:
-        """
-        Get CLIP contrastive scores at inference time.
-
-        Args:
-            obs: Environment observation.
-            goal: Embedded language goal instruction.
-
-        Returns:
-            Logits for CLIP scores.
-        """
-        with torch.no_grad():
-            perceptual_emb = self.perceptual_encoder(obs["rgb_obs"], obs["depth_obs"], obs["robot_obs"])
-            encoded_lang = self.language_goal(goal["lang"])
-            _, seq_vis_feat = self.plan_recognition(perceptual_emb)
-            image_features, lang_features = self.proj_vis_lang(seq_vis_feat, encoded_lang)
-            image_features = image_features / image_features.norm(dim=-1, keepdim=True)
-            text_features = lang_features / lang_features.norm(dim=-1, keepdim=True)
-            # cosine similarity as logits
-            logit_scale = self.logit_scale.exp()
-            logits_per_image = logit_scale * image_features @ text_features.t()
-            return logits_per_image
-
     def clip_groundtruth(self, seq_feat_vis, idx, use_for_aux_loss):
         """
         Compute and log CLIP ground truth metric. Only used in validation step.
