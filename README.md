@@ -4,7 +4,7 @@
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/mees/hulc.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/mees/hulc/alerts/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[<b>What Matters in Language Conditioned Imitation Learning</b>](https://arxiv.org/pdf/2204.06252.pdf)
+[<b>What Matters in Language Conditioned Imitation Learning over Unstructured Data</b>](https://arxiv.org/pdf/2204.06252.pdf)
 
 [Oier Mees](https://www.oiermees.com/), [Lukas Hermann](http://www2.informatik.uni-freiburg.de/~hermannl/), [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard)
 
