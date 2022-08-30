@@ -135,7 +135,7 @@ If you find the code useful, please cite:
 **HULC**
 ```bibtex
 @article{mees2022hulc,
-  author={Mees, Oier and Hermann, Lukas and Burgard, Wolfram},
+  author={Oier Mees and Lukas Hermann and Wolfram Burgard},
   title={What Matters in Language Conditioned Robotic Imitation Learning Over Unstructured Data},
   journal={IEEE Robotics and Automation Letters (RA-L)}, 
   volume={7},
