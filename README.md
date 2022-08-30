@@ -134,20 +134,26 @@ If you find the code useful, please cite:
 
 **HULC**
 ```bibtex
-@article{hulc22,
-author = {Oier Mees and Lukas Hermann and Wolfram Burgard},
-title = {What Matters in Language Conditioned Imitation Learning},
-journal={arXiv preprint arXiv:2204.06252},
-year = 2022,
+@article{mees2022hulc,
+  author={Mees, Oier and Hermann, Lukas and Burgard, Wolfram},
+  title={What Matters in Language Conditioned Robotic Imitation Learning Over Unstructured Data},
+  journal={IEEE Robotics and Automation Letters (RA-L)}, 
+  volume={7},
+  number={4},
+  pages={11205-11212},
+  year={2022}
 }
 ```
 **CALVIN**
 ```bibtex
-@article{calvin21,
+@article{mees2022calvin,
 author = {Oier Mees and Lukas Hermann and Erick Rosete-Beas and Wolfram Burgard},
-title = {CALVIN: A benchmark for Language-Conditioned Policy Learning for Long-Horizon Robot Manipulation Tasks},
-journal={arXiv preprint arXiv:2112.03227},
-year = 2021,
+title = {CALVIN: A Benchmark for Language-Conditioned Policy Learning for Long-Horizon Robot Manipulation Tasks},
+journal={IEEE Robotics and Automation Letters (RA-L)},
+volume={7},
+number={3},
+pages={7327-7334},
+year={2022}
 }
 ```
 
