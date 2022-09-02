@@ -113,6 +113,11 @@ Optional arguments:
 You can instead specify the path to another checkpoint by adding this to the evaluation command.
 - `--debug`: print debug information and visualize environment.
 
+## Changelog
+
+### 1 Sep 2022
+- Updated the language embeddings for the splits ABC and ABCD due to a bug in switching scenes during the automatic language labeling. Additionally, added various precomputed language embeddings. 
+
 ## Acknowledgements
 
 This work uses code from the following open-source projects and datasets:
