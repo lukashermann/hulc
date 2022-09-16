@@ -6,7 +6,7 @@
 
 [<b>What Matters in Language Conditioned Imitation Learning over Unstructured Data</b>](https://arxiv.org/pdf/2204.06252.pdf)
 
-[Oier Mees](https://www.oiermees.com/), [Lukas Hermann](http://www2.informatik.uni-freiburg.de/~hermannl/), [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard)
+[Oier Mees](https://www.oiermees.com/), [Lukas Hermann](https://lukashermann.github.io/), [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard)
 
  We present **HULC** (**H**ierarchical **U**niversal **L**anguage **C**onditioned Policies), an end-to-end model that can
  learn  a wide variety of language conditioned robot skills from  offline free-form imitation datasets. HULC sets a new state of the art on the challenging CALVIN benchmark,
@@ -114,6 +114,22 @@ You can instead specify the path to another checkpoint by adding this to the eva
 - `--debug`: print debug information and visualize environment.
 
 ## Changelog
+
+### 16 Sep 2022
+- **MAJOR BUG IN ABC and ABCD dataset:** If you downloaded these datasets before this date you have to do these fixes:
+   - Wrong language annotations in ABC and ABCD dataset. You can download the corrected language embeddings [here](https://github.com/mees/calvin/blob/main/dataset/README.md#language-embeddings). 
+   - Bug in `calvin_env` that only affects the generation of language embeddings. 
+   - Wrong `scene_info.npy` in ABC and ABCD dataset. Please replace as follows:
+```
+cd task_ABCD_D
+wget http://calvin.cs.uni-freiburg.de/scene_info_fix/task_ABCD_D_scene_info.zip
+unzip task_ABCD_D_scene_info.zip && rm task_ABCD_D_scene_info.zip
+```
+```
+cd task_ABC_D
+wget http://calvin.cs.uni-freiburg.de/scene_info_fix/task_ABC_D_scene_info.zip
+unzip task_ABC_D_scene_info.zip && rm task_ABC_D_scene_info.zip
+```
 
 ### 1 Sep 2022
 - Updated the language embeddings for the splits ABC and ABCD due to a bug in switching scenes during the automatic language labeling. Additionally, added various precomputed language embeddings. 
