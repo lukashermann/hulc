@@ -66,6 +66,8 @@ Trained with:
 - **RAM** - 512GB
 - **OS** - Ubuntu 20.04
 
+With this setup, one epoch takes around 1.5 hours and the whole training with 30 epochs can be completed in 45 hours (without the evaluation callbacks).
+
 ## Training
 To train our HULC model with the maximum amount of available GPUS, run:
 ```
