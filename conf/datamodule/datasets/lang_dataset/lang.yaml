@@ -1,4 +1,4 @@
-_target_: hulc.datasets.disk_dataset.DiskDataset
+_target_: calvin_agent.datasets.disk_dataset.DiskDataset
 key: "lang"
 save_format: "npz"
 batch_size: 32

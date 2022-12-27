@@ -1,6 +1,8 @@
 import logging
 from pathlib import Path
 
+from calvin_agent.evaluation.utils import imshow_tensor
+from calvin_agent.utils.utils import get_last_checkpoint
 import cv2
 import hydra
 import numpy as np
@@ -9,9 +11,7 @@ from omegaconf.errors import MissingMandatoryValue
 from pytorch_lightning import seed_everything
 import torch
 
-from hulc.evaluation.utils import imshow_tensor
 from hulc.models.hulc import Hulc
-from hulc.utils.utils import get_last_checkpoint
 
 logger = logging.getLogger(__name__)
 

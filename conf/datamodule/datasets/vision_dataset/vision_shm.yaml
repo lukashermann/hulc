@@ -1,4 +1,4 @@
-_target_: hulc.datasets.shm_dataset.ShmDataset
+_target_: calvin_agent.datasets.shm_dataset.ShmDataset
 key: "vis"
 batch_size: 32
 min_window_size: 20

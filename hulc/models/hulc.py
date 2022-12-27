@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Dict, NamedTuple, Optional, Tuple, Union
 
+from calvin_agent.models.calvin_base_model import CalvinBaseModel
 import hydra
 import numpy as np
 from omegaconf import DictConfig
@@ -23,7 +24,7 @@ def log_rank_0(*args, **kwargs):
     logger.info(*args, **kwargs)
 
 
-class Hulc(pl.LightningModule):
+class Hulc(pl.LightningModule, CalvinBaseModel):
     """
     The lightning module used for training.
 
@@ -136,6 +137,7 @@ class Hulc(pl.LightningModule):
         self.replan_freq = replan_freq
         self.latent_goal = None
         self.plan = None
+        self.lang_embeddings = None
 
         # for clip loss ground truth plot
         if self.use_clip_auxiliary_loss:
@@ -821,21 +823,33 @@ class Hulc(pl.LightningModule):
 
         Args:
             obs (dict): Observation from environment.
-            goal (dict): Goal as visual observation or embedded language instruction.
+            goal (str or dict): The goal as a natural language instruction or dictionary with goal images.
 
         Returns:
             Predicted action.
         """
         # replan every replan_freq steps (default 30 i.e every second)
         if self.rollout_step_counter % self.replan_freq == 0:
-            if "lang" in goal:
-                self.plan, self.latent_goal = self.get_pp_plan_lang(obs, goal)
+            if isinstance(goal, str):
+                embedded_lang = torch.from_numpy(self.lang_embeddings[goal]).to(self.device).squeeze(0).float()
+                self.plan, self.latent_goal = self.get_pp_plan_lang(obs, embedded_lang)
             else:
                 self.plan, self.latent_goal = self.get_pp_plan_vision(obs, goal)
         # use plan to predict actions with current observations
         action = self.predict_with_plan(obs, self.latent_goal, self.plan)
         self.rollout_step_counter += 1
         return action
+
+    def load_lang_embeddings(self, embeddings_path):
+        """
+        This has to be called before inference. Loads the lang embeddings from the dataset.
+
+        Args:
+            embeddings_path: Path to <dataset>/validation/embeddings.npy
+        """
+        embeddings = np.load(embeddings_path, allow_pickle=True).item()
+        # we want to get the embedding for full sentence, not just a task name
+        self.lang_embeddings = {v["ann"][0]: v["emb"] for k, v in embeddings.items()}
 
     def predict_with_plan(
         self,
@@ -903,7 +917,7 @@ class Hulc(pl.LightningModule):
         """
         with torch.no_grad():
             perceptual_emb = self.perceptual_encoder(obs["rgb_obs"], obs["depth_obs"], obs["robot_obs"])
-            latent_goal = self.language_goal(goal["lang"])
+            latent_goal = self.language_goal(goal)
             # ------------Plan Proposal------------ #
             pp_state = self.plan_proposal(perceptual_emb[:, 0], latent_goal)
             pp_dist = self.dist.get_dist(pp_state)

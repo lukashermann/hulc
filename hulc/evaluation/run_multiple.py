@@ -4,9 +4,8 @@ import os
 from pathlib import Path
 import subprocess
 
+from calvin_agent.utils.utils import get_all_checkpoints
 import numpy as np
-
-from hulc.utils.utils import get_all_checkpoints
 
 
 def get_log_dir(log_dir):
@@ -31,10 +30,12 @@ def main():
         "--train_folder", type=str, help="If calvin_agent was used to train, specify path to the log dir."
     )
     parser.add_argument("--max_epoch", type=int, default=30, help="Evaluate until which epoch.")
-    parser.add_argument("--log_dir", type=str, help="If calvin_agent was used to train, specify path to the log dir.")
+    parser.add_argument(
+        "--eval_log_dir", type=str, help="If calvin_agent was used to train, specify path to the log dir."
+    )
 
     args = parser.parse_args()
-    log_dir = get_log_dir(args.log_dir)
+    eval_log_dir = get_log_dir(args.eval_log_dir)
 
     eval_script = (Path(__file__).parent / "evaluate_policy.py").as_posix()
     training_dir = Path(args.train_folder)
@@ -57,13 +58,13 @@ def main():
             args.dataset_path,
             "--train_folder",
             args.train_folder,
-            "--log_dir",
-            args.log_dir,
+            "--eval_log_dir",
+            args.eval_log_dir,
             "--device",
             str(i),
         ]
-        std_out = log_dir / f"stdout_{i}.out"
-        std_err = log_dir / f"stderr_{i}.err"
+        std_out = eval_log_dir / f"stdout_{i}.out"
+        std_err = eval_log_dir / f"stderr_{i}.err"
         with open(std_out, "wb") as out, open(std_err, "wb") as err:
             subprocess.Popen(cmd, stdout=out, stderr=err, preexec_fn=os.setpgrp)
 

@@ -1,1 +1,1 @@
-_target_: hulc.datasets.utils.shared_memory_utils.SignalCallback
+_target_: calvin_agent.datasets.utils.shared_memory_utils.SignalCallback

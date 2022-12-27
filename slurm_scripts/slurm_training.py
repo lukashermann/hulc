@@ -21,6 +21,7 @@ parser.add_argument("-j", "--job_name", type=str, default="play_training")
 parser.add_argument("-g", "--gpus", type=int, default=1)
 parser.add_argument("--mem", type=int, default=0)  # 0 means no memory limit
 parser.add_argument("--cpus", type=int, default=8)
+parser.add_argument("--days", type=int, default=1)
 parser.add_argument("-v", "--venv", type=str)
 parser.add_argument("-p", "--partition", type=str, default="alldlc_gpu-rtx2080")
 parser.add_argument("-x", "--exclude", type=str)
@@ -60,7 +61,7 @@ if not args.no_clone:
 if args.partition == "test":
     args.partition = "testdlc_gpu-rtx2080"
 
-args.time = "1-00:00"
+args.time = f"{args.days}-00:00"
 if args.partition == "testdlc_gpu-rtx2080":
     args.time = "01:00:00"
 

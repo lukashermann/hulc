@@ -1,10 +1,15 @@
+from datetime import timedelta
 import logging
 from pathlib import Path
 import sys
 from typing import List, Union
 
+from lightning_lite.accelerators.cuda import num_cuda_devices
+from pytorch_lightning.strategies import DDPStrategy
+
 # This is for using the locally installed repo clone when using slurm
 sys.path.insert(0, Path(__file__).absolute().parents[1].as_posix())
+from calvin_agent.utils.utils import get_git_commit_hash, get_last_checkpoint, print_system_env_info
 import hydra
 from omegaconf import DictConfig, ListConfig, OmegaConf
 from pytorch_lightning import Callback, LightningModule, seed_everything, Trainer
@@ -13,12 +18,7 @@ from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.utilities import rank_zero_only
 
 import hulc.models.hulc as models_m
-from hulc.utils.utils import (
-    get_git_commit_hash,
-    get_last_checkpoint,
-    initialize_pretrained_weights,
-    print_system_env_info,
-)
+from hulc.utils.utils import initialize_pretrained_weights
 
 logger = logging.getLogger(__name__)
 
@@ -61,8 +61,9 @@ def train(cfg: DictConfig) -> None:
     }
 
     # Configure multi-GPU training
-    if is_multi_gpu_training(trainer_args["gpus"]):  # type: ignore
-        trainer_args["strategy"] = "ddp"
+    if is_multi_gpu_training(trainer_args["devices"]):
+        # increase default timeout for loading data into shared memory
+        trainer_args["strategy"] = DDPStrategy(find_unused_parameters=False, timeout=timedelta(seconds=3600))
         if not cfg.slurm:
             modify_argv_hydra()
 
@@ -135,22 +136,28 @@ def modify_argv_hydra() -> None:
         sys.argv.append(o)  # type: ignore
 
 
-def is_multi_gpu_training(gpus: Union[int, str, ListConfig]) -> bool:
+def is_multi_gpu_training(devices: Union[int, str, ListConfig]) -> bool:
     """
-    Parse pytorch-lightning gpu device selection,
-    see https://pytorch-lightning.readthedocs.io/en/stable/advanced/multi_gpu.html
+    Check if training on multiple GPUs.
+    See https://pytorch-lightning.readthedocs.io/en/stable/common/trainer.html#devices
 
-    Args:
-        gpus: int, str or ListConfig specifying gpu devices
+     Args:
+        devices: int, str or ListConfig specifying devices
 
     Returns:
         True if multi-gpu training (ddp), False otherwise.
     """
-    return (
-        (isinstance(gpus, int) and (gpus > 1 or gpus == -1))
-        or (isinstance(gpus, str) and len(gpus) > 1)
-        or (isinstance(gpus, ListConfig) and len(gpus) > 1)
-    )
+    num_gpu_available = num_cuda_devices()
+    if isinstance(devices, int):
+        return devices > 1 or (devices == -1 and num_gpu_available > 1)
+    elif isinstance(devices, str) and devices == "auto":
+        return num_gpu_available > 1
+    elif isinstance(devices, str):
+        return len(devices) > 1
+    elif isinstance(devices, ListConfig):
+        return len(devices) > 1
+    else:
+        raise ValueError
 
 
 @rank_zero_only

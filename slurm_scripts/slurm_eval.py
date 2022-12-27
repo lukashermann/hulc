@@ -2,9 +2,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+from calvin_agent.utils.utils import get_all_checkpoints
 import numpy as np
-
-from hulc.utils.utils import get_all_checkpoints
 
 
 def main():
