@@ -9,6 +9,8 @@ from pytorch_lightning.strategies import DDPStrategy
 
 # This is for using the locally installed repo clone when using slurm
 sys.path.insert(0, Path(__file__).absolute().parents[1].as_posix())
+import hulc
+
 from calvin_agent.utils.utils import get_git_commit_hash, get_last_checkpoint, print_system_env_info
 import hydra
 from omegaconf import DictConfig, ListConfig, OmegaConf
@@ -33,7 +35,7 @@ def train(cfg: DictConfig) -> None:
     """
     # sets seeds for numpy, torch, python.random and PYTHONHASHSEED.
     seed_everything(cfg.seed, workers=True)  # type: ignore
-    datamodule = hydra.utils.instantiate(cfg.datamodule)
+    datamodule = hydra.utils.instantiate(cfg.datamodule, training_repo_root=Path(hulc.__file__).parents[1])
     chk = get_last_checkpoint(Path.cwd())
 
     # Load Model

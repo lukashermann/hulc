@@ -7,10 +7,9 @@ import sys
 from calvin_agent.evaluation.evaluate_policy import evaluate_policy
 
 sys.path.insert(0, Path(__file__).absolute().parents[2].as_posix())
+from calvin_agent.evaluation.utils import get_default_model_and_env
 from calvin_agent.utils.utils import get_all_checkpoints, get_checkpoints_for_epochs, get_last_checkpoint
 from pytorch_lightning import seed_everything
-
-from calvin_agent.evaluation.utils import get_default_model_and_env
 
 logger = logging.getLogger(__name__)
 
