@@ -9,8 +9,6 @@ from pytorch_lightning.strategies import DDPStrategy
 
 # This is for using the locally installed repo clone when using slurm
 sys.path.insert(0, Path(__file__).absolute().parents[1].as_posix())
-import hulc
-
 from calvin_agent.utils.utils import get_git_commit_hash, get_last_checkpoint, print_system_env_info
 import hydra
 from omegaconf import DictConfig, ListConfig, OmegaConf
@@ -19,6 +17,7 @@ from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.utilities import rank_zero_only
 
+import hulc
 import hulc.models.hulc as models_m
 from hulc.utils.utils import initialize_pretrained_weights
 
