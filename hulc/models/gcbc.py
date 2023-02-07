@@ -297,8 +297,9 @@ class GCBC(Hulc):
         """
         with torch.no_grad():
             if self.latent_goal is None:
-                if "lang" in goal:
-                    self.latent_goal = self.language_goal(goal["lang"])
+                if isinstance(goal, str):
+                    embedded_lang = torch.from_numpy(self.lang_embeddings[goal]).to(self.device).squeeze(0).float()
+                    self.latent_goal = self.language_goal(embedded_lang)
                 else:
                     imgs = {
                         k: torch.cat([v, goal["rgb_obs"][k]], dim=1) for k, v in obs["rgb_obs"].items()

@@ -119,8 +119,8 @@ You can instead specify the path to another checkpoint by adding this to the eva
 
 ### 16 Sep 2022
 - **MAJOR BUG IN ABC and ABCD dataset:** If you downloaded these datasets before this date you have to do these fixes:
-   - Wrong language annotations in ABC and ABCD dataset. You can download the corrected language embeddings [here](https://github.com/mees/calvin/blob/main/dataset/README.md#language-embeddings). 
-   - Bug in `calvin_env` that only affects the generation of language embeddings. 
+   - Wrong language annotations in ABC and ABCD dataset. You can download the corrected language embeddings [here](https://github.com/mees/calvin/blob/main/dataset/README.md#language-embeddings).
+   - Bug in `calvin_env` that only affects the generation of language embeddings.
    - Wrong `scene_info.npy` in ABC and ABCD dataset. Please replace as follows:
 ```
 cd task_ABCD_D
@@ -134,7 +134,7 @@ unzip task_ABC_D_scene_info.zip && rm task_ABC_D_scene_info.zip
 ```
 
 ### 1 Sep 2022
-- Updated the language embeddings for the splits ABC and ABCD due to a bug in switching scenes during the automatic language labeling. Additionally, added various precomputed language embeddings. 
+- Updated the language embeddings for the splits ABC and ABCD due to a bug in switching scenes during the automatic language labeling. Additionally, added various precomputed language embeddings.
 
 ## Acknowledgements
 
@@ -160,7 +160,7 @@ If you find the code useful, please cite:
 @article{mees2022hulc,
   author={Oier Mees and Lukas Hermann and Wolfram Burgard},
   title={What Matters in Language Conditioned Robotic Imitation Learning Over Unstructured Data},
-  journal={IEEE Robotics and Automation Letters (RA-L)}, 
+  journal={IEEE Robotics and Automation Letters (RA-L)},
   volume={7},
   number={4},
   pages={11205-11212},

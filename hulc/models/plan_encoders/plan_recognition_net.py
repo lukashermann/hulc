@@ -84,7 +84,8 @@ class PlanRecognitionTransformersNetwork(nn.Module):
             self.in_features, num_heads, dim_feedforward=encoder_hidden_size, dropout=dropout_p
         )
         encoder_norm = nn.LayerNorm(self.in_features) if encoder_normalize else None
-        self.layernorm = nn.LayerNorm(self.in_features)
+        if self.positional_normalize:
+            self.layernorm = nn.LayerNorm(self.in_features)
         self.dropout = nn.Dropout(p=dropout_p)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers, norm=encoder_norm)
         self.fc = nn.Linear(in_features=self.in_features, out_features=fc_hidden_size)

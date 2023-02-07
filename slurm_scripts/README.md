@@ -4,7 +4,7 @@
 $ cd $HULC_ROOT/slurm_scripts
 $ python slurm_training.py --venv hulc_venv datamodule.root_data_dir=/path/to/dataset/
 ```
-This assumes that `--venv chulc_venv` specifies a conda environment.
+This assumes that `--venv hulc_venv` specifies a conda environment.
 To use virtualenv instead, change line 18 of sbatch_lfp.sh accordingly.
 
 All hydra arguments can be used as in the normal training.

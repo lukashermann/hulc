@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Dict, NamedTuple, Optional, Tuple, Union
 
+from calvin_agent.models.calvin_base_model import CalvinBaseModel
 import hydra
 import numpy as np
 from omegaconf import DictConfig
@@ -23,7 +24,7 @@ def log_rank_0(*args, **kwargs):
     logger.info(*args, **kwargs)
 
 
-class Hulc(pl.LightningModule):
+class Hulc(pl.LightningModule, CalvinBaseModel):
     """
     The lightning module used for training.
 
@@ -136,6 +137,7 @@ class Hulc(pl.LightningModule):
         self.replan_freq = replan_freq
         self.latent_goal = None
         self.plan = None
+        self.lang_embeddings = None
 
         # for clip loss ground truth plot
         if self.use_clip_auxiliary_loss:
@@ -446,18 +448,19 @@ class Hulc(pl.LightningModule):
                     batch_size["aux_lang"] = 1
                 else:
                     batch_size["aux_lang"] = torch.sum(dataset_batch["use_for_aux_lang_loss"]).detach()  # type:ignore
-                    if self.use_bc_z_auxiliary_loss:
-                        lang_pred_loss += self.bc_z_auxiliary_loss(
-                            seq_feat, dataset_batch["lang"], dataset_batch["use_for_aux_lang_loss"]
-                        )
-                    if self.use_clip_auxiliary_loss:
-                        lang_clip_loss += self.clip_auxiliary_loss(
-                            seq_feat, latent_goal, dataset_batch["use_for_aux_lang_loss"]
-                        )
-                    if self.use_mia_auxiliary_loss:
-                        lang_contrastive_loss += self.mia_auxiliary_loss(
-                            seq_feat, latent_goal, dataset_batch["use_for_aux_lang_loss"]
-                        )
+                if self.use_bc_z_auxiliary_loss:
+                    lang_pred_loss += self.bc_z_auxiliary_loss(
+                        seq_feat, dataset_batch["lang"], dataset_batch["use_for_aux_lang_loss"]
+                    )
+                if self.use_clip_auxiliary_loss:
+                    lang_clip_loss += self.clip_auxiliary_loss(
+                        seq_feat, latent_goal, dataset_batch["use_for_aux_lang_loss"]
+                    )
+
+                if self.use_mia_auxiliary_loss:
+                    lang_contrastive_loss += self.mia_auxiliary_loss(
+                        seq_feat, latent_goal, dataset_batch["use_for_aux_lang_loss"]
+                    )
             encoders_dict[self.modality_scope] = [pp_dist, pr_dist]
             kl_loss += kl
             action_loss += act_loss
@@ -576,17 +579,29 @@ class Hulc(pl.LightningModule):
             Loss term of cosine distance between predicted language embedding and ground truth language embedding
         """
         assert self.bc_z_lang_decoder is not None
+        skip_batch = False
         if use_for_aux_loss is not None:
             if not torch.any(use_for_aux_loss):
-                return torch.tensor(0.0).to(self.device)
+                # Hack for avoiding a crash when using ddp. loss gets multiplied with 0 at the end of method to
+                # effectively skip whole batch. We do a dummy forward pass, to prevent ddp from complaining.
+                # see https://github.com/pytorch/pytorch/issues/43259
+                skip_batch = True
+                seq_vis_feat = seq_vis_feat[0:1]
+                gt_lang = gt_lang[0:1]
+            else:
+                seq_vis_feat = seq_vis_feat[use_for_aux_loss]
+                gt_lang = gt_lang[use_for_aux_loss]
             seq_vis_feat = seq_vis_feat[use_for_aux_loss]
-            gt_lang = gt_lang[use_for_aux_loss]
+
         lang_pred = self.bc_z_lang_decoder(seq_vis_feat)
         cos_sim = ((lang_pred * gt_lang).sum(-1)) / (
             torch.linalg.norm(lang_pred, dim=1) * torch.linalg.norm(gt_lang, dim=1)
         )
         cos_dist = 1 - cos_sim
-        return cos_dist.mean()
+        loss = cos_dist.mean()
+        if skip_batch:
+            loss *= 0
+        return loss
 
     def mia_auxiliary_loss(self, seq_vis_feat, encoded_lang, use_for_aux_loss):
         """
@@ -605,11 +620,18 @@ class Hulc(pl.LightningModule):
             Binary cross entropy loss.
         """
         assert self.mia_lang_discriminator is not None
+        skip_batch = False
         if use_for_aux_loss is not None:
             if not torch.any(use_for_aux_loss):
-                return torch.tensor(0.0).to(self.device)
-            seq_vis_feat = seq_vis_feat[use_for_aux_loss]
-            encoded_lang = encoded_lang[use_for_aux_loss]
+                # Hack for avoiding a crash when using ddp. Loss gets multiplied with 0 at the end of method to
+                # effectively skip whole batch. We do a dummy forward pass, to prevent ddp from complaining.
+                # see https://github.com/pytorch/pytorch/issues/43259
+                skip_batch = True
+                seq_vis_feat = seq_vis_feat[0:1]
+                encoded_lang = encoded_lang[0:1]
+            else:
+                seq_vis_feat = seq_vis_feat[use_for_aux_loss]
+                encoded_lang = encoded_lang[use_for_aux_loss]
         image_features, lang_features = self.proj_vis_lang(seq_vis_feat, encoded_lang)
         # l2 normalize embeddings?
 
@@ -621,6 +643,8 @@ class Hulc(pl.LightningModule):
         labels = torch.cat([labels_pos, labels_neg], 0)
         pred = torch.cat([pred_pos, pred_neg], 0)
         bce_loss = binary_cross_entropy_with_logits(pred, labels)
+        if skip_batch:
+            bce_loss *= 0
         return bce_loss
 
     def clip_auxiliary_loss(self, seq_vis_feat, encoded_lang, use_for_aux_loss):
@@ -640,11 +664,18 @@ class Hulc(pl.LightningModule):
             Contrastive loss.
         """
         assert self.use_clip_auxiliary_loss is not None
+        skip_batch = False
         if use_for_aux_loss is not None:
             if not torch.any(use_for_aux_loss):
-                return torch.tensor(0.0).to(self.device)
-            seq_vis_feat = seq_vis_feat[use_for_aux_loss]
-            encoded_lang = encoded_lang[use_for_aux_loss]
+                # Hack for avoiding a crash when using ddp. Loss gets multiplied with 0 at the end of method to
+                # effectively skip whole batch. We do a dummy forward pass, to prevent ddp from complaining.
+                # see https://github.com/pytorch/pytorch/issues/43259
+                skip_batch = True
+                seq_vis_feat = seq_vis_feat[0:1]
+                encoded_lang = encoded_lang[0:1]
+            else:
+                seq_vis_feat = seq_vis_feat[use_for_aux_loss]
+                encoded_lang = encoded_lang[use_for_aux_loss]
         image_features, lang_features = self.proj_vis_lang(seq_vis_feat, encoded_lang)
         image_features = image_features / image_features.norm(dim=-1, keepdim=True)
         text_features = lang_features / lang_features.norm(dim=-1, keepdim=True)
@@ -659,6 +690,8 @@ class Hulc(pl.LightningModule):
         loss_i = cross_entropy(logits_per_image, labels)
         loss_t = cross_entropy(logits_per_text, labels)
         loss = (loss_i + loss_t) / 2
+        if skip_batch:
+            loss *= 0
         return loss
 
     def on_fit_start(self) -> None:
@@ -821,21 +854,33 @@ class Hulc(pl.LightningModule):
 
         Args:
             obs (dict): Observation from environment.
-            goal (dict): Goal as visual observation or embedded language instruction.
+            goal (str or dict): The goal as a natural language instruction or dictionary with goal images.
 
         Returns:
             Predicted action.
         """
         # replan every replan_freq steps (default 30 i.e every second)
         if self.rollout_step_counter % self.replan_freq == 0:
-            if "lang" in goal:
-                self.plan, self.latent_goal = self.get_pp_plan_lang(obs, goal)
+            if isinstance(goal, str):
+                embedded_lang = torch.from_numpy(self.lang_embeddings[goal]).to(self.device).squeeze(0).float()
+                self.plan, self.latent_goal = self.get_pp_plan_lang(obs, embedded_lang)
             else:
                 self.plan, self.latent_goal = self.get_pp_plan_vision(obs, goal)
         # use plan to predict actions with current observations
         action = self.predict_with_plan(obs, self.latent_goal, self.plan)
         self.rollout_step_counter += 1
         return action
+
+    def load_lang_embeddings(self, embeddings_path):
+        """
+        This has to be called before inference. Loads the lang embeddings from the dataset.
+
+        Args:
+            embeddings_path: Path to <dataset>/validation/embeddings.npy
+        """
+        embeddings = np.load(embeddings_path, allow_pickle=True).item()
+        # we want to get the embedding for full sentence, not just a task name
+        self.lang_embeddings = {v["ann"][0]: v["emb"] for k, v in embeddings.items()}
 
     def predict_with_plan(
         self,
@@ -903,7 +948,7 @@ class Hulc(pl.LightningModule):
         """
         with torch.no_grad():
             perceptual_emb = self.perceptual_encoder(obs["rgb_obs"], obs["depth_obs"], obs["robot_obs"])
-            latent_goal = self.language_goal(goal["lang"])
+            latent_goal = self.language_goal(goal)
             # ------------Plan Proposal------------ #
             pp_state = self.plan_proposal(perceptual_emb[:, 0], latent_goal)
             pp_dist = self.dist.get_dist(pp_state)

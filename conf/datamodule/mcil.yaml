@@ -3,7 +3,7 @@ defaults:
   - transforms: play_basic
   - proprioception_dims: robot_no_joints #robot_full
   - observation_space: lang_rgb_static_gripper_abs_act
-_target_: hulc.datasets.hulc_data_module.HulcDataModule
+_target_: calvin_agent.datasets.calvin_data_module.CalvinDataModule
 _recursive_: false
 root_data_dir: ???
 action_space: 7

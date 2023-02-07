@@ -15,14 +15,16 @@ if default_log_dir == "/tmp":
 parser = argparse.ArgumentParser(description="Parse slurm parameters and hydra config overrides")
 
 parser.add_argument("--script", type=str, default="./sbatch_lfp.sh")
-parser.add_argument("--train_file", type=str, default="../lfp/training.py")
+parser.add_argument("--train_file", type=str, default="../hulc/training.py")
 parser.add_argument("-l", "--log_dir", type=str, default=default_log_dir)
 parser.add_argument("-j", "--job_name", type=str, default="play_training")
 parser.add_argument("-g", "--gpus", type=int, default=1)
 parser.add_argument("--mem", type=int, default=0)  # 0 means no memory limit
 parser.add_argument("--cpus", type=int, default=8)
+parser.add_argument("--days", type=int, default=1)
 parser.add_argument("-v", "--venv", type=str)
 parser.add_argument("-p", "--partition", type=str, default="alldlc_gpu-rtx2080")
+parser.add_argument("--login_node", type=str, default="kis3bat1")
 parser.add_argument("-x", "--exclude", type=str)
 parser.add_argument("--no_clone", action="store_true")
 args, unknownargs = parser.parse_known_args()
@@ -60,12 +62,12 @@ if not args.no_clone:
 if args.partition == "test":
     args.partition = "testdlc_gpu-rtx2080"
 
-args.time = "1-00:00"
+args.time = f"{args.days}-00:00"
 if args.partition == "testdlc_gpu-rtx2080":
     args.time = "01:00:00"
 
 job_opts = {
-    "script": f"{args.script.as_posix()} {args.venv} {args.train_file.as_posix()} {log_dir.as_posix()} {args.gpus} {' '.join(unknownargs)}",
+    "script": f"{args.script.as_posix()} {args.venv} {args.login_node} {args.train_file.as_posix()} {log_dir.as_posix()} {args.gpus} {' '.join(unknownargs)}",
     "partition": args.partition,
     "mem": args.mem,
     "ntasks-per-node": args.gpus,
