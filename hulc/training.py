@@ -14,7 +14,7 @@ import hydra
 from omegaconf import DictConfig, ListConfig, OmegaConf
 from pytorch_lightning import Callback, LightningModule, seed_everything, Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor
-from pytorch_lightning.loggers import LightningLoggerBase
+from pytorch_lightning.loggers import Logger
 from pytorch_lightning.utilities import rank_zero_only
 
 import hulc
@@ -88,7 +88,7 @@ def setup_callbacks(callbacks_cfg: DictConfig) -> List[Callback]:
     return callbacks
 
 
-def setup_logger(cfg: DictConfig, model: LightningModule) -> LightningLoggerBase:
+def setup_logger(cfg: DictConfig, model: LightningModule) -> Logger:
     """
     Set up the logger (tensorboard or wandb) from hydra config.
 
