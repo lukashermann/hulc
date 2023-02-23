@@ -14,7 +14,7 @@ from hulc.utils.utils import format_sftp_path
 
 plt.rcParams["mathtext.fontset"] = "cm"
 plt.rcParams["font.family"] = "STIXGeneral"
-plt.pyplot.title(r"ABC123 vs $\mathrm{ABC123}^{123}$")
+plt.title(r"ABC123 vs $\mathrm{ABC123}^{123}$")
 plt.rcParams["pdf.fonttype"] = 42
 plt.rcParams["ps.fonttype"] = 42
 
