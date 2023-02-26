@@ -14,6 +14,12 @@ from pytorch_lightning import seed_everything
 logger = logging.getLogger(__name__)
 
 
+def get_epoch(checkpoint):
+    if "=" not in checkpoint.stem:
+        return "0"
+    checkpoint.stem.split("=")[1]
+
+
 def main():
     seed_everything(0, workers=True)  # type:ignore
     parser = argparse.ArgumentParser(description="Evaluate a trained model on multistep sequences with language goals.")
@@ -65,7 +71,7 @@ def main():
 
     env = None
     for checkpoint in checkpoints:
-        epoch = checkpoint.stem.split("=")[1]
+        epoch = get_epoch(checkpoint)
         model, env, _ = get_default_model_and_env(
             args.train_folder,
             args.dataset_path,
