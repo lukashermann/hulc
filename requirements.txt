@@ -8,7 +8,6 @@ opencv-python
 omegaconf
 plotly
 ftfy
-pyhash
 pytorch-lightning==1.8.6
 lightning_lite
 torch==1.13.1
@@ -17,7 +16,6 @@ MulticoreTSNE
 gitpython
 scipy
 sentence-transformers
-pytorch3d
 gym
 moviepy
 tqdm

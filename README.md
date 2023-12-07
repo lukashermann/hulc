@@ -16,19 +16,25 @@ We hope the code will be useful as a starting point for further research on lang
 
 ![](media/hulc_rollout.gif)
 ## Installation
-To begin, clone this repository locally
+As a prerequisite, you need to have [calvin](https://github.com/mees/calvin) installed.
+This is needed because HULC builds upon calvin_agent and calvin_env.
+
+Next, clone this repository locally
 ```bash
-git clone --recurse-submodules https://github.com/mees/hulc.git
+git clone https://github.com/mees/hulc.git
 export HULC_ROOT=$(pwd)/hulc
 
 ```
+
 Install requirements:
 ```bash
 cd $HULC_ROOT
-conda create -n hulc_venv python=3.8  # or use virtualenv
+conda create -n hulc_venv python=3.10  # or use virtualenv
 conda activate hulc_venv
 sh install.sh
 ```
+We originally used Python 3.8, but we 3.10 should also work.
+
 If you encounter problems installing pyhash, you might have to downgrade setuptools to a version below 58.
 
 ## Download
@@ -38,6 +44,7 @@ If you want to train on the [CALVIN](https://github.com/mees/calvin) dataset, ch
 cd $HULC_ROOT/dataset
 sh download_data.sh D | ABC | ABCD | debug
 ```
+If you have previously downloaded the dataset in the calvin repo, you can just set the paths to that folder via the command line when starting a training.
 If you want to get started without downloading the whole dataset, use the argument `debug` to download a small debug dataset (1.3 GB).
 ### Language Embeddings
 We provide the precomputed embeddings of the different Language Models we evaluate in the paper.
