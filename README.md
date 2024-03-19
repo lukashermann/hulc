@@ -78,7 +78,7 @@ With this setup, one epoch takes around 1.5 hours and the whole training with 30
 ## Training
 To train our HULC model with the maximum amount of available GPUS, run:
 ```
-python hulc/training.py trainer.gpus=-1 datamodule.root_data_dir=path/to/dataset datamodule/datasets=vision_lang_shm
+python hulc/training.py trainer.devices-1 datamodule.root_data_dir=path/to/dataset datamodule/datasets=vision_lang_shm
 ```
 The `vision_lang_shm` option loads the CALVIN dataset into shared memory at the beginning of the training,
 speeding up the data loading during training.
@@ -91,20 +91,20 @@ If you have access to a SLURM cluster, follow this [guide](https://github.com/me
 
 You can use our [pre-trained models](#pre-trained-models) to initialize a training by running
 ```
-python hulc/training.py trainer.gpus=-1 datamodule.root_data_dir=path/to/dataset hydra.run.dir=$HULC_ROOT/checkpoints/HULC_D_D
+python hulc/training.py trainer.devices-1 datamodule.root_data_dir=path/to/dataset hydra.run.dir=$HULC_ROOT/checkpoints/HULC_D_D
 ```
 Note that this will log the training into the checkpoint folder.
 
 ### Ablations
 Multi-context imitation learning (MCIL), (Lynch et al., 2019):
 ```
-python hulc/training.py trainer.gpus=-1 datamodule.root_data_dir=path/to/dataset datamodule/datasets=vision_lang_shm model=mcil
+python hulc/training.py trainer.devices-1 datamodule.root_data_dir=path/to/dataset datamodule/datasets=vision_lang_shm model=mcil
 datamodule=mcil
 ```
 
 Goal-conditioned behavior cloning (GCBC), (Lynch et al., 2019):
 ```
-python hulc/training.py trainer.gpus=-1 datamodule.root_data_dir=path/to/dataset datamodule/datasets=vision_lang_shm model=gcbc
+python hulc/training.py trainer.devices-1 datamodule.root_data_dir=path/to/dataset datamodule/datasets=vision_lang_shm model=gcbc
 ~callbacks/tsne_plot
 ```
 
